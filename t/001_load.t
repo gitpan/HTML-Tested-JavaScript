@@ -90,13 +90,13 @@ is_deeply($stash, { l => [ {
 	v2: "2"
 } ]'}) or diag(Dumper($stash));
 
-$obj->l->[0]->v("</scRipt>");
+$obj->l->[0]->v("</scRipt>\n");
 $obj->l->[0]->v2("\\f");
 $obj->l->[1]->v2("dd\"dd");
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => 'v: "<\\/scRipt>"',
+	v => 'v: "<\\/scRipt>\n"',
 	v2 => 'v2: "\\\\f"',
 	v3 => "1"
 }, {
@@ -104,7 +104,7 @@ is_deeply($stash, { l => [ {
 	v2 => 'v2: "dd\\"dd"',
 	v3 => '2'
 } ], l_js => 'l: [ {
-	v: "<\\/scRipt>",
+	v: "<\\/scRipt>\n",
 	v2: "\\\\f"
 }, {
 	v: "2",

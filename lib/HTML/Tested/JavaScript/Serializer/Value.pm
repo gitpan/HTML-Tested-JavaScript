@@ -9,6 +9,7 @@ sub encode_value {
 	$val =~ s/\\/\\\\/g;
 	$val =~ s#/#\\/#g;
 	$val =~ s/"/\\"/g;
+	$val =~ s/\n/\\n/g;
 	return $val;
 }
 

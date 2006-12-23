@@ -24,7 +24,7 @@ use warnings FATAL => 'all';
 package HTML::Tested::JavaScript;
 use HTML::Tested;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 VARIABLES
 
