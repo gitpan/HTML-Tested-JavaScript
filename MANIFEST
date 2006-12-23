@@ -1,0 +1,15 @@
+MANIFEST
+README
+LICENSE
+Makefile.PL
+javascript/serializer.js
+lib/HTML/Tested/JavaScript/Test.pm
+lib/HTML/Tested/JavaScript/Serializer/Value.pm
+lib/HTML/Tested/JavaScript/Serializer/List.pm
+lib/HTML/Tested/JavaScript/Serializer.pm
+lib/HTML/Tested/JavaScript.pm
+t/030_seal.t
+t/020_install.t
+t/010_serializer.t
+t/001_load.t
+META.yml                                 Module meta-data (added by MakeMaker)
