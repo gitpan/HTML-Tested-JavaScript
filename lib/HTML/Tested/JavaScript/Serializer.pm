@@ -83,5 +83,6 @@ sub render {
 
 sub bless_from_tree { return $_[1]; }
 sub options { return {}; }
+sub validate { return (); }
 
 1;

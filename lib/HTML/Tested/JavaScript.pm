@@ -4,7 +4,7 @@ HTML::Tested::JavaScript - JavaScript enabled HTML::Tested widgets.
 
 =head1 SYNOPSIS
 
-  use HTML::Tested::JavaScript;
+  use HTML::Tested::JavaScript qw(HTJ);
   
   # set location of your javascript files
   $HTML::Tested::JavaScript::Location = "/my-js-files";
@@ -22,9 +22,21 @@ use strict;
 use warnings FATAL => 'all';
 
 package HTML::Tested::JavaScript;
-use HTML::Tested;
+use base 'Exporter';
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
+
+our @EXPORT_OK = qw(HTJ);
+
+=head1 CONSTANTS
+
+=head2 HTJ
+
+It is shortcut for HTML::Tested::JavaScript. It is can be exported by importing
+HTML::Tested::JavaScript with HTJ parameter.
+
+=cut
+use constant HTJ => __PACKAGE__;
 
 =head1 VARIABLES
 

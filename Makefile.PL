@@ -7,8 +7,10 @@ WriteMakefile(
 	ABSTRACT     => 'HTML::Tested JavaScript helpers',
 	PREREQ_PM    => { 'Test::Simple' => 0.44,
 	    		'HTML::Tested' => 0.20,
-	    		'Mozilla::Mechanize::GUITester' => 0.08,
+	    		'Mozilla::Mechanize::GUITester' => 0.10,
 			'File::Slurp' => '',
+			'HTTP::Daemon' => '',
+			'Mozilla::SourceViewer' => '0.02'
 	},
 );
 

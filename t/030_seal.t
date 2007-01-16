@@ -1,11 +1,12 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 6;
+use Test::More tests => 8;
 use HTML::Tested::Test;
 use HTML::Tested::Seal;
 
-BEGIN { use_ok('HTML::Tested::JavaScript::Serializer');
+BEGIN { use_ok('HTML::Tested::JavaScript', qw(HTJ));
+	use_ok('HTML::Tested::JavaScript::Serializer');
 	use_ok('HTML::Tested::JavaScript::Test');
 	use_ok('HTML::Tested::JavaScript::Serializer::Value');
 	use_ok('HTML::Tested::JavaScript::Serializer::List');
@@ -15,13 +16,14 @@ HTML::Tested::Seal->instance("ggg");
 
 package T;
 use base 'HTML::Tested';
-__PACKAGE__->ht_add_widget("HTML::Tested::JavaScript::Serializer::Value", "sv", is_sealed => 1);
+__PACKAGE__->ht_add_widget(::HTJ . "::Serializer::Value", "sv", is_sealed => 1);
 __PACKAGE__->ht_add_widget("HTML::Tested::JavaScript::Serializer", "ser", "sv");
 
 package main;
 
 my $obj = T->new({ sv => 'a' });
 my $stash = {};
+is_deeply([ $obj->ht_validate ], []);
 $obj->ht_render($stash);
 
 is_deeply([ HTML::Tested::Test->check_stash(ref($obj), $stash,

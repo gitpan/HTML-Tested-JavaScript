@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 14;
+use Test::More tests => 15;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -9,9 +9,10 @@ use HTML::Tested::JavaScript::Test;
 BEGIN { use_ok('HTML::Tested::JavaScript::Serializer');
 	use_ok('HTML::Tested::JavaScript::Serializer::Value');
 	use_ok('HTML::Tested::JavaScript::Serializer::List');
+	use_ok('HTML::Tested::JavaScript', qw(HTJ));
 }
 
-use constant HTJ => "HTML::Tested::JavaScript::Serializer";
+use constant HTJS => HTJ."::Serializer";
 
 is($HTML::Tested::JavaScript::Location, "/html-tested-javascript");
 is(HTML::Tested::JavaScript::Script_Include(),
@@ -19,7 +20,7 @@ is(HTML::Tested::JavaScript::Script_Include(),
 
 package T;
 use base 'HTML::Tested';
-__PACKAGE__->ht_add_widget(::HTJ . "::Value", "v");
+__PACKAGE__->ht_add_widget(::HTJS . "::Value", "v");
 
 package main;
 
@@ -30,7 +31,7 @@ is_deeply($stash, { v => 'v: "a"' });
 
 package T2;
 use base 'HTML::Tested';
-__PACKAGE__->ht_add_widget(::HTJ . "::List", "l", 'T');
+__PACKAGE__->ht_add_widget(::HTJS . "::List", "l", 'T');
 
 package main;
 
@@ -113,8 +114,8 @@ is_deeply($stash, { l => [ {
 
 package T3;
 use base 'HTML::Tested';
-__PACKAGE__->ht_add_widget(::HTJ . "::Value", "v$_") for (0 .. 3);
-__PACKAGE__->ht_add_widget(::HTJ, "ser", map { "v$_" } (0 .. 3));
+__PACKAGE__->ht_add_widget(::HTJS . "::Value", "v$_") for (0 .. 3);
+__PACKAGE__->ht_add_widget(::HTJS, "ser", map { "v$_" } (0 .. 3));
 
 package main;
 
@@ -128,8 +129,8 @@ is_deeply([ HTML::Tested::Test->check_stash(ref($obj), $stash
 eval {
 package TXX;
 use base 'HTML::Tested';
-__PACKAGE__->make_tested_value("x");
-__PACKAGE__->ht_add_widget(::HTJ, "ser", 'xxx');
+__PACKAGE__->ht_add_widget("HTML::Tested::Value", "x");
+__PACKAGE__->ht_add_widget(::HTJS, "ser", 'xxx');
 };
 like($@, qr/Unable to find.*xxx/);
 
