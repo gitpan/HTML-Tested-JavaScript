@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 26;
+use Test::More tests => 27;
 use File::Temp qw(tempdir);
 use Mozilla::Mechanize::GUITester;
 use File::Slurp;
@@ -16,6 +16,7 @@ use Cwd qw(abs_path);
 BEGIN { use_ok('HTML::Tested::JavaScript::Serializer');
 	use_ok('HTML::Tested::JavaScript::Serializer::Value');
 	use_ok('HTML::Tested::JavaScript::Serializer::List');
+	use_ok('HTML::Tested::Value::Hidden');
 }
 
 #use Carp;
