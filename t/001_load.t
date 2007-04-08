@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 15;
+use Test::More tests => 18;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -47,6 +47,22 @@ is_deeply($stash, { l => [ {
 }, {
 	v: "2"
 } ]'}) or diag(Dumper($stash));
+
+$obj->l->[0]->v(undef);
+$obj->ht_render($stash);
+is_deeply($stash, { l => [ {
+	v => 'v: ""'
+}, {
+	v => 'v: "2"'
+}], l_js => 'l: [ {
+	v: ""
+}, {
+	v: "2"
+} ]'}) or diag(Dumper($stash));
+is_deeply([ HTML::Tested::Test->check_stash(ref($obj), $stash,
+		{ l => [ { }, { v => "2" } ] }) ], []);
+
+$obj->l->[0]->v(1);
 
 T->ht_add_widget("HTML::Tested::JavaScript::Serializer::Value", "v2");
 $obj = T2->new({ l => [ map { T->new({ v => $_, v2 => $_ }) } (1 .. 2) ] });
@@ -126,6 +142,12 @@ $obj->ht_render($stash);
 is_deeply([ HTML::Tested::Test->check_stash(ref($obj), $stash
 			, { ser => '', map { ("v$_", $_) } (0 .. 3) }) ], []);
 
+$obj->v3(undef);
+$obj->ht_render($stash);
+my @cs = HTML::Tested::Test->check_stash(ref($obj), $stash, { ser => ''
+		, map { ("v$_", $_) } (0 .. 3) });
+like($cs[0], qr/Mismatch/);
+
 eval {
 package TXX;
 use base 'HTML::Tested';
@@ -134,5 +156,5 @@ __PACKAGE__->ht_add_widget(::HTJS, "ser", 'xxx');
 };
 like($@, qr/Unable to find.*xxx/);
 
-my @cs = HTML::Tested::Test->check_stash(ref($obj), $stash, { ser => '' });
+@cs = HTML::Tested::Test->check_stash(ref($obj), $stash, { ser => '' });
 like($cs[0], qr/Mismatch/);

@@ -24,7 +24,8 @@ function ht_serializer_submit(val, url, cb) {
 		};
 	var pairs = [];
 	req.open("POST", url, !!cb);
-	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	req.setRequestHeader("Content-Type"
+			, "application/x-www-form-urlencoded");
 	ht_encode_form_data(pairs, val, "");
 	req.send(pairs.join('&'));
 	return req;

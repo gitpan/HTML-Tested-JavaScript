@@ -12,7 +12,8 @@ sub render {
 	my @names = map { $_->name } grep { /^HTML::.*Serializer/ } @$wl;
 
 	for my $r (@{ $stash->{ $n } }) {
-		push @strs, join(",\n\t", map { $r->{$_} } @names);
+		push @strs, join(",\n\t", grep { defined($_) }
+			map { $r->{$_} } @names);
 	}
 	my $ls = join("\n}, {\n\t", @strs);
 	$stash->{"$n\_js"} = $ls ? "$n: [ {\n\t$ls\n} ]" : "$n: []";

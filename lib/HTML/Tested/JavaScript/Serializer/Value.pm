@@ -2,19 +2,11 @@ use strict;
 use warnings FATAL => 'all';
 
 package HTML::Tested::JavaScript::Serializer::Value;
-use base 'HTML::Tested::Value';
-
-sub encode_value {
-	my ($self, $val) = @_;
-	$val =~ s/\\/\\\\/g;
-	$val =~ s#/#\\/#g;
-	$val =~ s/"/\\"/g;
-	$val =~ s/\n/\\n/g;
-	return $val;
-}
+use base 'HTML::Tested::JavaScript::Variable';
 
 sub value_to_string {
 	my ($self, $name, $val) = @_;
+	# it should be $self->name here because we don't encode it as list
 	return $self->name . ": \"$val\"";
 }
 

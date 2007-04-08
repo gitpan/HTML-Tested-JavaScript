@@ -4,11 +4,13 @@ LICENSE
 Makefile.PL
 javascript/serializer.js
 lib/HTML/Tested/JavaScript/Test.pm
+lib/HTML/Tested/JavaScript/Variable.pm
 lib/HTML/Tested/JavaScript/AutoSelect.pm
 lib/HTML/Tested/JavaScript/Serializer/Value.pm
 lib/HTML/Tested/JavaScript/Serializer/List.pm
 lib/HTML/Tested/JavaScript/Serializer.pm
 lib/HTML/Tested/JavaScript.pm
+t/050_variable.t
 t/040_auto_select.t
 t/030_seal.t
 t/020_install.t

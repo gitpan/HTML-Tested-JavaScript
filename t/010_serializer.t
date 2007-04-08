@@ -38,8 +38,10 @@ __PACKAGE__->ht_add_widget("HTML::Tested::JavaScript::Serializer::Value", "sv");
 package T2;
 use base 'HTML::Tested';
 __PACKAGE__->ht_add_widget("HTML::Tested::JavaScript::Serializer::Value", "jv");
-__PACKAGE__->ht_add_widget("HTML::Tested::JavaScript::Serializer::List", "l", 'T1');
-__PACKAGE__->ht_add_widget("HTML::Tested::JavaScript::Serializer", "ser", "jv", "l");
+__PACKAGE__->ht_add_widget("HTML::Tested::JavaScript::Serializer::List"
+					, "l", 'T1');
+__PACKAGE__->ht_add_widget("HTML::Tested::JavaScript::Serializer"
+				, "ser", "jv", "l");
 
 package main;
 
