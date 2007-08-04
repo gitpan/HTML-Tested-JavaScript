@@ -7,7 +7,7 @@ use base 'HTML::Tested::Value';
 sub encode_value {
 	my ($self, $val) = @_;
 	$val =~ s/\\/\\\\/g;
-	$val =~ s#/#\\/#g;
+	$val =~ s#/#\\/#g; # is needed for </script>
 	$val =~ s/"/\\"/g;
 	$val =~ s/\n/\\n/g;
 	return $val;

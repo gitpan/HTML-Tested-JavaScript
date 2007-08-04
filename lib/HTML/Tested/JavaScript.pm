@@ -14,6 +14,24 @@ HTML::Tested::JavaScript - JavaScript enabled HTML::Tested widgets.
 This is collection of HTML::Tested-style widgets which use JavaScript
 functionality.
 
+It presently includes:
+
+=over
+
+=item HTML::Tested::JavaScript::Variable
+
+Produces simple JavaScript variable with necessary escaping.
+
+=item HTML::Tested::JavaScript::Serializer
+
+Which can be used to serialize data between your JS script and server.
+
+=item HTML::Tested::JavaScript::RichEdit
+
+Which provides infrastructure for rich text editing widget.
+
+=back
+
 Please see individual modules for more information.
 
 =cut
@@ -24,7 +42,7 @@ use warnings FATAL => 'all';
 package HTML::Tested::JavaScript;
 use base 'Exporter';
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 our @EXPORT_OK = qw(HTJ);
 

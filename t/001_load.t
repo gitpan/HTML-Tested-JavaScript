@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 18;
+use Test::More tests => 19;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -158,3 +158,29 @@ like($@, qr/Unable to find.*xxx/);
 
 @cs = HTML::Tested::Test->check_stash(ref($obj), $stash, { ser => '' });
 like($cs[0], qr/Mismatch/);
+
+package LV;
+use base ::HTJS . "::Value";
+
+package LI;
+use base 'HTML::Tested';
+__PACKAGE__->ht_add_widget('LV', "v");
+
+package LT;
+use base 'HTML::Tested';
+__PACKAGE__->ht_add_widget(::HTJS . "::List", "l", 'LI');
+
+package main;
+$obj = LT->new({ l => [ map { LI->new({ v => $_ }) } (1 .. 2) ] });
+$stash = {};
+$obj->ht_render($stash);
+is_deeply($stash, { l => [ {
+	v => 'v: "1"'
+}, {
+	v => 'v: "2"'
+}], l_js => 'l: [ {
+	v: "1"
+}, {
+	v: "2"
+} ]'}) or diag(Dumper($stash));
+
