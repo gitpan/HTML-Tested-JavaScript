@@ -17,7 +17,7 @@ sub render {
 			map { $r->{$_} } @names);
 	}
 	my $ls = join("\n}, {\n\t", @strs);
-	$stash->{"$n\_js"} = $ls ? "$n: [ {\n\t$ls\n} ]" : "$n: []";
+	$stash->{"$n\_js"} = $ls ? "\"$n\": [ {\n\t$ls\n} ]" : "\"$n\": []";
 }
 
 package HTML::Tested::JavaScript::Serializer::List;

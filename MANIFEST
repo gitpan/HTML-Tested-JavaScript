@@ -10,9 +10,11 @@ lib/HTML/Tested/JavaScript/Variable.pm
 lib/HTML/Tested/JavaScript/AutoSelect.pm
 lib/HTML/Tested/JavaScript/Serializer/Value.pm
 lib/HTML/Tested/JavaScript/Serializer/List.pm
+lib/HTML/Tested/JavaScript/Serializer/Form.pm
 lib/HTML/Tested/JavaScript/Serializer.pm
 lib/HTML/Tested/JavaScript/RichEdit.pm
 lib/HTML/Tested/JavaScript.pm
+t/070_ser_form.t
 t/060_rich_edit.t
 t/050_variable.t
 t/040_auto_select.t

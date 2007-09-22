@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 19;
+use Test::More tests => 21;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -27,7 +27,7 @@ package main;
 my $obj = T->new({ v => 'a' });
 my $stash = {};
 $obj->ht_render($stash);
-is_deeply($stash, { v => 'v: "a"' });
+is_deeply($stash, { v => '"v": "a"' });
 
 package T2;
 use base 'HTML::Tested';
@@ -39,25 +39,25 @@ $obj = T2->new({ l => [ map { T->new({ v => $_ }) } (1 .. 2) ] });
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => 'v: "1"'
+	v => '"v": "1"'
 }, {
-	v => 'v: "2"'
-}], l_js => 'l: [ {
-	v: "1"
+	v => '"v": "2"'
+}], l_js => '"l": [ {
+	"v": "1"
 }, {
-	v: "2"
+	"v": "2"
 } ]'}) or diag(Dumper($stash));
 
 $obj->l->[0]->v(undef);
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => 'v: ""'
+	v => '"v": ""'
 }, {
-	v => 'v: "2"'
-}], l_js => 'l: [ {
-	v: ""
+	v => '"v": "2"'
+}], l_js => '"l": [ {
+	"v": ""
 }, {
-	v: "2"
+	"v": "2"
 } ]'}) or diag(Dumper($stash));
 is_deeply([ HTML::Tested::Test->check_stash(ref($obj), $stash,
 		{ l => [ { }, { v => "2" } ] }) ], []);
@@ -69,17 +69,17 @@ $obj = T2->new({ l => [ map { T->new({ v => $_, v2 => $_ }) } (1 .. 2) ] });
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => 'v: "1"',
-	v2 => 'v2: "1"'
+	v => '"v": "1"',
+	v2 => '"v2": "1"'
 }, {
-	v => 'v: "2"',
-	v2 => 'v2: "2"'
-} ], l_js => 'l: [ {
-	v: "1",
-	v2: "1"
+	v => '"v": "2"',
+	v2 => '"v2": "2"'
+} ], l_js => '"l": [ {
+	"v": "1",
+	"v2": "1"
 }, {
-	v: "2",
-	v2: "2"
+	"v": "2",
+	"v2": "2"
 } ]'}) or diag(Dumper($stash));
 
 is_deeply([ HTML::Tested::Test->check_stash(ref($obj), $stash,
@@ -92,19 +92,19 @@ $obj = T2->new({ l => [ map { T->new({ v => $_, v2 => $_, v3 => $_ }) }
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => 'v: "1"',
-	v2 => 'v2: "1"',
+	v => '"v": "1"',
+	v2 => '"v2": "1"',
 	v3 => "1"
 }, {
-	v => 'v: "2"',
-	v2 => 'v2: "2"',
+	v => '"v": "2"',
+	v2 => '"v2": "2"',
 	v3 => '2'
-} ], l_js => 'l: [ {
-	v: "1",
-	v2: "1"
+} ], l_js => '"l": [ {
+	"v": "1",
+	"v2": "1"
 }, {
-	v: "2",
-	v2: "2"
+	"v": "2",
+	"v2": "2"
 } ]'}) or diag(Dumper($stash));
 
 $obj->l->[0]->v("</scRipt>\n");
@@ -113,19 +113,19 @@ $obj->l->[1]->v2("dd\"dd");
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => 'v: "<\\/scRipt>\n"',
-	v2 => 'v2: "\\\\f"',
+	v => '"v": "<\\/scRipt>\n"',
+	v2 => '"v2": "\\\\f"',
 	v3 => "1"
 }, {
-	v => 'v: "2"',
-	v2 => 'v2: "dd\\"dd"',
+	v => '"v": "2"',
+	v2 => '"v2": "dd\\"dd"',
 	v3 => '2'
-} ], l_js => 'l: [ {
-	v: "<\\/scRipt>\n",
-	v2: "\\\\f"
+} ], l_js => '"l": [ {
+	"v": "<\\/scRipt>\n",
+	"v2": "\\\\f"
 }, {
-	v: "2",
-	v2: "dd\\"dd"
+	"v": "2",
+	"v2": "dd\\"dd"
 } ]'}) or diag(Dumper($stash));
 
 package T3;
@@ -159,6 +159,22 @@ like($@, qr/Unable to find.*xxx/);
 @cs = HTML::Tested::Test->check_stash(ref($obj), $stash, { ser => '' });
 like($cs[0], qr/Mismatch/);
 
+$obj->ht_set_widget_option("ser", "no_script", 1);
+$obj->ht_render($stash);
+is($stash->{ser}, '<script>
+var ser = {
+	"v0": "0",
+	"v1": "1",
+	"v2": "2",
+	"v3": ""
+};
+</script>');
+
+ref($obj)->ht_set_widget_option(ser => no_script => 1);
+$obj = T3->new({ map { ("v$_", $_) } (0 .. 3) });
+$obj->ht_render($stash);
+unlike($stash->{ser}, qr/serializer\.js/);
+
 package LV;
 use base ::HTJS . "::Value";
 
@@ -175,12 +191,12 @@ $obj = LT->new({ l => [ map { LI->new({ v => $_ }) } (1 .. 2) ] });
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => 'v: "1"'
+	v => '"v": "1"'
 }, {
-	v => 'v: "2"'
-}], l_js => 'l: [ {
-	v: "1"
+	v => '"v": "2"'
+}], l_js => '"l": [ {
+	"v": "1"
 }, {
-	v: "2"
+	"v": "2"
 } ]'}) or diag(Dumper($stash));
 

@@ -53,26 +53,26 @@ use strict;
 use warnings FATAL => 'all';
 
 package HTML::Tested::JavaScript::Serializer;
-use HTML::Tested;
+use base 'HTML::Tested::Value';
 use HTML::Tested::JavaScript;
 use Carp;
 
 sub new {
 	my ($class, $parent, $name, @jses) = @_;
-	my $self = bless({ name => $name, _jses => \@jses }, $class);
+	my $self = bless({ name => $name, _jses => \@jses
+			, _options => {} }, $class);
 	my @unknowns = grep { !$parent->ht_find_widget($_) } @jses;
 	confess "$class: Unable to find js controls: " . join(', ', @unknowns)
 			 if @unknowns;
 	return $self;
 }
 
-sub name { return shift()->{name}; }
-
 sub render {
 	my ($self, $caller, $stash, $id) = @_;
 	my $n = $self->name;
-	my $res = HTML::Tested::JavaScript::Script_Include()
-		. "<script>\nvar $n = {\n\t"
+	my $res = $caller->ht_get_widget_option($n, "no_script") ? ""
+			: HTML::Tested::JavaScript::Script_Include();
+	$res .= "<script>\nvar $n = {\n\t"
 		. join(",\n\t", grep { $_ } map {
 				my $r = $stash->{$_};
 				ref($r) ? $stash->{$_ . "_js"} : $r
@@ -81,8 +81,6 @@ sub render {
 	$stash->{ $n } = $res;
 }
 
-sub bless_from_tree { return $_[1]; }
-sub options { return {}; }
 sub validate { return (); }
 
 1;

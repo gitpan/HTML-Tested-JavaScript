@@ -118,7 +118,8 @@ my $res = $mech->run_js("return ht_serializer_submit"
 like($res, qr/'sv' => 'a'/);
 is_deeply($mech->console_messages, []);
 
-$obj = T2->new({ jv => '"a', l => [ map { T->new({ sv => $_ }) } (1 .. 2) ] });
+$obj = T2->new({ jv => '"a', l => [ map { T->new({ sv => "f&$_" }) }
+			(1 .. 2) ] });
 $stash = {};
 $obj->ht_render($stash);
 
@@ -131,7 +132,7 @@ $str = sprintf(<<ENDS, $stash->{ser});
 </html>
 ENDS
 write_file("$td/a.html", $str);
-like($str, qr/l:/);
+like($str, qr/"l":/);
 
 ok($mech->get("$d_url/td/a.html"));
 is_deeply($mech->console_messages, []) or diag($mech->content);
@@ -148,8 +149,8 @@ $mech->x_send_keys("");
 
 $res = $mech->pull_alerts;
 like($res, qr/'l' => /);
-like($res, qr/'sv' => '1'/);
-like($res, qr/'sv' => '2'/);
+like($res, qr/'sv' => 'f%261'/);
+like($res, qr/'sv' => 'f%262'/);
 like($res, qr/readyState is 4/);
 like($res, qr/Content-Type[^\n]*application\/x-www-form-urlencoded/);
 
@@ -166,7 +167,7 @@ $str = sprintf(<<ENDS, $stash->{ser});
 </html>
 ENDS
 write_file("$td/a.html", $str);
-like($str, qr/l:/);
+like($str, qr/"l":/);
 
 ok($mech->get("$d_url/td/a.html"));
 is_deeply($mech->console_messages, []) or diag($mech->content);
