@@ -2,10 +2,16 @@ MANIFEST
 README
 LICENSE
 Makefile.PL
+javascript/color_picker.js
+javascript/images/color_pointerbg.gif
+javascript/images/hue_pointerbg.gif
+javascript/images/pickerbg.png
+javascript/images/huebg.png
 javascript/rich_edit.js
 javascript/serializer.js
 lib/HTML/Tested/JavaScript/Test/RichEdit.pm
 lib/HTML/Tested/JavaScript/Test.pm
+lib/HTML/Tested/JavaScript/ColorPicker.pm
 lib/HTML/Tested/JavaScript/Variable.pm
 lib/HTML/Tested/JavaScript/AutoSelect.pm
 lib/HTML/Tested/JavaScript/Serializer/Value.pm
@@ -14,6 +20,7 @@ lib/HTML/Tested/JavaScript/Serializer/Form.pm
 lib/HTML/Tested/JavaScript/Serializer.pm
 lib/HTML/Tested/JavaScript/RichEdit.pm
 lib/HTML/Tested/JavaScript.pm
+t/080_color_picker.t
 t/070_ser_form.t
 t/060_rich_edit.t
 t/050_variable.t

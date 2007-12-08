@@ -63,7 +63,8 @@ if (!$pid) {
 				$freq->set_params($rp->params);
 			};
 			my $resp = HTTP::Response->new(200);
-			my $tst = T->ht_convert_request_to_tree($freq);
+			my $tst = T->ht_load_from_params(
+				map { $_, $freq->param($_) } $freq->param);
 			$resp->content($tst->sform_response(Dumper($tst)
 						, 'gggg'));
 			$c->send_response($resp);

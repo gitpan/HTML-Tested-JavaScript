@@ -42,9 +42,9 @@ use warnings FATAL => 'all';
 package HTML::Tested::JavaScript;
 use base 'Exporter';
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
-our @EXPORT_OK = qw(HTJ);
+our @EXPORT_OK = qw(HTJ $Location);
 
 =head1 CONSTANTS
 

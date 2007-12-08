@@ -1,12 +1,12 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         HTML-Tested-JavaScript
-version:      0.07
+version:      0.08
 version_from: lib/HTML/Tested/JavaScript.pm
 installdirs:  site
 requires:
     File::Slurp:                   
-    HTML::Tested:                  0.29
+    HTML::Tested:                  0.31
     HTTP::Daemon:                  
     HTTP::Request::Params:         
     Mozilla::Mechanize::GUITester: 0.12

@@ -60,7 +60,8 @@ if (!$pid) {
 			my $tc = $r->uri =~ /T2/ ? 'T2' : 'T';
 			$freq->parse_url('?' . $r->content);
 			my $resp = HTTP::Response->new(200);
-			my $tested = $tc->ht_convert_request_to_tree($freq);
+			my $tested = $tc->ht_load_from_params(
+				map { $_, $freq->param($_) } $freq->param);
 			$resp->content("<html><body><pre>"
 				. $r->as_string
 				. Dumper($tested) . "</pre></body></html>");
