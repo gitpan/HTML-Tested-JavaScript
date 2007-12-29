@@ -1,9 +1,42 @@
 function _htre_win(id) { return document.getElementById(id).contentWindow; }
-function _htre_doc(id) { return _htre_win(id).document; }
+function htre_document(id) { return _htre_win(id).document; }
 
 function _htre_parse_id(d) {
 	var arr = d.id.match(/^(.+)_(\w+)$/);
 	return [ arr[1], arr[2] ];
+}
+
+var _htre_state_tags = { FONT: [ "fontsize", function(n) { return n.size; } ]
+	, OL: [ "insertorderedlist", function(n) { return true; } ]
+	, A: [ "link", function(a) { return a.href; } ]
+	, UL: [ "insertunorderedlist", function(n) { return true; } ] };
+
+var _htre_state_styles = { fontname: "fontFamily", forecolor: "color"
+		, hilitecolor: "backgroundColor", bold: "fontWeight"
+		, underline: "textDecoration", italic: "fontStyle"
+		, textalign: "textAlign" };
+
+function htre_get_selection_state(id) {
+	var w = _htre_win(id);
+	var sel = w.getSelection();
+	if (!sel)
+		return;
+
+	var res = { selection: sel };
+	for (var an = sel.anchorNode; an; an = an.parentNode) {
+		if (!an.tagName)
+			continue;
+
+		var st = _htre_state_tags[an.tagName];
+		if (st && !(st[0] in res))
+			res[ st[0] ] = st[1](an);
+
+		for (var i in _htre_state_styles)
+			if (!res[i])
+				res[i] = an.style[ _htre_state_styles[i] ];
+	}
+	res[ "justify" + res.textalign ] = true;
+	return res;
 }
 
 function htre_get_selection(id) {
@@ -15,7 +48,7 @@ function htre_focus(id) {
 }
 
 function htre_exec_command(id, cmd, arg) {
-	_htre_doc(id).execCommand(cmd, false, arg);
+	htre_document(id).execCommand(cmd, false, arg);
 	htre_focus(id);
 }
 
@@ -51,10 +84,10 @@ var _htre_modifiers = [ [ "bold", "click", _htre_but_command ]
 
 function htre_init(id) {
 	/* Do it only once - no way to test it ... */
-	if (_htre_doc(id).designMode == "on")
+	if (htre_document(id).designMode == "on")
 		return;
 
-	_htre_doc(id).designMode = "on";
+	htre_document(id).designMode = "on";
 	for each (var mod in _htre_modifiers) {
 		var bo = document.getElementById(id + "_" + mod[0]);
 		if (!bo)
@@ -78,15 +111,15 @@ function htre_get_inner_xml(node) {
 
 function htre_get_value(id) {
 	/* innerHTML doesn't return valid XML, so do it hard way... */
-	return htre_get_inner_xml(_htre_doc(id).body);
+	return htre_get_inner_xml(htre_document(id).body);
 }
 
 function htre_set_value(id, val) {
-	_htre_doc(id).body.innerHTML = val;
+	htre_document(id).body.innerHTML = val;
 }
 
 function htre_add_onchange_listener(id, func) {
-	_htre_doc(id).addEventListener("blur", func, false);
+	htre_document(id).addEventListener("blur", func, false);
 }
 
 var _htre_tag_whitelist = { SPAN: 1, BR: 1, P: 1, "#text": 1, HTRE: 1
@@ -118,4 +151,25 @@ function htre_escape(str) {
 	var doc = (new DOMParser()).parseFromString(str, "application/xml");
 	_htre_escape_filter(doc);
 	return htre_get_inner_xml(doc.getElementsByTagName("HTRE")[0]);
+}
+
+function htre_do_tick(doc, name, cb, msecs) {
+	if (doc._htre_tick_active)
+		return;
+
+	doc._htre_tick_active = true;
+	setTimeout(function() {
+		var state = htre_get_selection_state(name);
+		if (state)
+			cb(name, state);
+		doc._htre_tick_active = false;
+	}, msecs);
+}
+
+function htre_listen_for_state_changes(name, cb, msecs) {
+	var doc = htre_document(name);
+	var f = function(e) { htre_do_tick(e.currentTarget, name, cb, msecs); };
+	doc.addEventListener("keypress", f, true);
+	doc.addEventListener("blur", f, true);
+	doc.addEventListener("focus", f, true);
 }

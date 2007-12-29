@@ -14,21 +14,22 @@ sub new {
 #$name\_color {
 	-moz-user-select: none;
 	position: relative;
-	background-image: url($Location/images/pickerbg.png);
+	background-image: url($Location/images/color_picker.png);
 	background-color: #FF0000;
 	background-repeat: no-repeat;
-	background-position: center;
-	height: 192px;
-	width: 192px;
+	background-position: -6px -6px;
+	height: 180px;
+	width: 180px;
 }
 
 #$name\_color_pointer {
-	top: 0px;
-	left: 0px;
+	top: -5.5px;
+	left: -5.5px;
 	width: 11px;
 	height: 11px;
 	position: absolute;
-	background-image: url($Location/images/color_pointerbg.gif);
+	background-position: -6px -188px;
+	background-image: url($Location/images/color_picker.png);
 }
 ENDS
 	$parent->ht_add_widget(HTV, "$name\_color", is_trusted => 1
@@ -40,18 +41,21 @@ ENDS
 #$name\_hue {
 	-moz-user-select: none;
 	position: relative;
-	background-image: url($Location/images/huebg.png);
-	width: 18px;
-	height: 186px;
+	background-image: url($Location/images/color_picker.png);
+	width: 16px;
+	height: 180px;
+	background-position: -196px -6px;
+	background-repeat: no-repeat;
 }
 
 #$name\_hue_pointer {
-	width: 18px;
-	height: 7px;
+	width: 27px;
+	height: 9px;
 	position: absolute;
-	top: 0px;
-	left: 0px;
-	background-image: url($Location/images/hue_pointerbg.gif);
+	top: -4.5px;
+	left: -5px;
+	background-image: url($Location/images/color_picker.png);
+	background-position: -22px -188px;
 }
 ENDS
 	$parent->ht_add_widget(HTV, "$name\_hue", is_trusted => 1

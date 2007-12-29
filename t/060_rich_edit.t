@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 77;
+use Test::More tests => 115;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
@@ -33,6 +33,7 @@ my @v_fn = (v_fontname => <<'ENDS');
 <option value="Georgia">Georgia</option>
 <option value="Trebuchet">Trebuchet</option>
 <option value="Verdana">Verdana</option>
+<option value="Serif">Serif</option>
 </select>
 ENDS
 
@@ -109,10 +110,13 @@ $mech->x_click($if, 10, 10);
 $mech->x_send_keys('hoho hoho');
 is($if_ns->GetInnerHTML, "hoho hoho<br>");
 is($mech->run_js('return htre_get_value("v");'), "hoho hoho<BR/>");
+is($mech->run_js('return htre_document("v");'), '[object HTMLDocument]');
+is_deeply($mech->console_messages, []) or exit 1;
 
 use_ok('HTML::Tested::JavaScript::Test::RichEdit', qw(HTRE_Get_Value
-			HTRE_Set_Value));
+			HTRE_Set_Value HTRE_Get_Body));
 is(HTRE_Get_Value($mech, "v"), "hoho hoho<br>");
+is(HTRE_Get_Body($mech, "v")->GetInnerHTML, HTRE_Get_Value($mech, "v"));
 
 $mech->run_js('htre_set_value("v", "momo<p>mama");');
 is($mech->run_js('return htre_get_value("v");'), "momo<P>mama</P>");
@@ -208,13 +212,21 @@ $mech->x_send_keys('hoho hoho');
 is(HTRE_Get_Value($mech, "v"), '<span style="font-weight: bold;">'
 	. 'hoho hoho<br></span>');
 is_deeply($mech->console_messages, []);
+is($mech->run_js('return htre_get_selection_state("v").bold;'), 'bold');
+is_deeply($mech->console_messages, []) or exit 1;
+
+HTRE_Set_Value($mech, "v", '<span style="font-weight: normal;">'
+	. 'hoho hoho</span>');
+$mech->x_click($if, 10, 10);
+$mech->x_send_keys('{RIG}');
+is($mech->run_js('return htre_get_selection_state("v").bold;'), 'normal');
 
 HTRE_Set_Value($mech, "v", '<span style="font-weight: bold;">'
 	. '<script>var _a;</script>hoho hoho<br></span>');
 $mech->pull_alerts;
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
 	, '<SPAN style="font-weight: bold;">hoho hoho<BR/></SPAN>');
-is_deeply($mech->console_messages, []);
+is_deeply($mech->console_messages, []) or exit 1;
 
 HTRE_Set_Value($mech, "v", '<span style="font-weight: bold;" onclick="boom();">'
 	. '<script>var _a;</script>hoho hoho<br></span>');
@@ -232,6 +244,7 @@ $mech->x_send_keys('haha haha');
 is(HTRE_Get_Value($mech, "v"), '<span style="font-style: italic;">'
 	. '<span style="font-weight: bold;">haha haha<br></span></span>');
 is_deeply($mech->console_messages, []);
+is($mech->run_js('return htre_get_selection_state("v").italic;'), 'italic');
 
 HTRE_Set_Value($mech, "v", "");
 my $under = $mech->get_html_element_by_id("v_underline");
@@ -241,7 +254,15 @@ $mech->x_click($under, 2, 2);
 $mech->x_send_keys('haha haha');
 is(HTRE_Get_Value($mech, "v")
 	, '<span style="text-decoration: underline;">haha haha<br></span>');
+is($mech->run_js('return htre_get_selection_state("v").underline;')
+	, 'underline');
 is_deeply($mech->console_messages, []);
+
+$mech->x_click($bo, 2, 2);
+$mech->x_send_keys('bbb');
+is($mech->run_js('return htre_get_selection_state("v").bold;'), 'bold');
+is($mech->run_js('return htre_get_selection_state("v").underline;')
+	, 'underline') or exit 1;
 
 my $ix = $mech->run_js('return htre_get_inner_xml(document.body)');
 is_deeply($mech->console_messages, []);
@@ -262,6 +283,11 @@ $str = sprintf(<<'ENDS'
 	height: 300px;
 }
 </style>
+<script>
+function do_hide() {
+	document.getElementById("h").style.display = "none";
+}
+</script>
 </head><body>
 <div id="v_justifycenter">JCenter</div>
 <div id="v_justifyleft">JLeft</div>
@@ -273,9 +299,12 @@ $str = sprintf(<<'ENDS'
 <div id="v_undo">Undo</div>
 <div id="v_redo">Redo</div>
 <div id="foci" onclick="javascript:htre_focus('v')">Foci</div>
+<div id="hide" onclick="javascript:do_hide()">hide</div>
 %s
 %s
+<div id="h">
 %s
+</div>
 </body> </html>
 ENDS
 		, $stash->{v_script}, $stash->{v_fontsize}
@@ -304,6 +333,8 @@ $mech->x_send_keys('fn fn');
 my $gv = '<font size="2"><span style="font-family: '
 		. 'Courier;">fn fn<br></span></font>';
 is(HTRE_Get_Value($mech, "v"), $gv);
+is($mech->run_js('return htre_get_selection_state("v").fontname;'), 'Courier');
+is($mech->run_js('return htre_get_selection_state("v").fontsize;'), 2);
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
 	, '<FONT size="2"><SPAN style="font-family: Courier;">fn fn<BR/>'
 	. '</SPAN></FONT>');
@@ -312,6 +343,28 @@ $mech->x_send_keys('bo bo');
 is(HTRE_Get_Value($mech, "v"), '<font size="2"><span style="font-family: '
 		. 'Courier;">fn fn<span style="color: rgb(1, 35, 69);">'
 		. 'bo bo</span><br></span></font>');
+is($mech->run_js('return htre_get_selection_state("v").forecolor;')
+	, 'rgb(1, 35, 69)');
+
+$mech->x_change_select($fs_sel, 4);
+$mech->x_send_keys('fo fo');
+is(HTRE_Get_Value($mech, "v"), '<font size="2"><span style="font-family: '
+		. 'Courier;">fn fn<span style="color: rgb(1, 35, 69);">'
+		. 'bo bo<font size="4">fo fo</font></span><br></span></font>');
+is($mech->run_js('return htre_get_selection_state("v").fontsize;'), 4);
+like($mech->run_js('return htre_get_selection_state("v").selection.anchorNode;')
+	, qr/object/);
+is_deeply($mech->console_messages, []) or exit 1;
+
+HTRE_Set_Value($mech, "v", "");
+$mech->run_js('htre_exec_command("v", "hilitecolor", "#ffccdd");');
+$mech->x_send_keys('c');
+$mech->x_change_select($fs_sel, 6);
+$mech->x_send_keys('fh fh');
+is(HTRE_Get_Value($mech, "v"), '<span style="background-color: '
+	. 'rgb(255, 204, 221);">c<font size="6">fh fh<br></font></span>');
+is($mech->run_js('return htre_get_selection_state("v").hilitecolor;')
+	, 'rgb(255, 204, 221)');
 
 HTRE_Set_Value($mech, "v", "");
 my $jc = $mech->get_html_element_by_id("v_justifycenter");
@@ -321,6 +374,16 @@ is(HTRE_Get_Value($mech, "v"), '<div style="text-align: center;">goo goo<br>'
 		. '</div>');
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
 	, '<DIV style="text-align: center;">goo goo<BR/></DIV>');
+is($mech->run_js('return htre_get_selection_state("v").justifycenter;')
+	, 'true');
+
+$mech->run_js('htre_exec_command("v", "hilitecolor", "#ffccdd");');
+$mech->x_send_keys('bc bc');
+is(HTRE_Get_Value($mech, "v"), '<div style="text-align: center;">goo goo'
+	. '<span style="background-color: rgb(255, 204, 221);">'
+	. 'bc bc</span><br></div>');
+is($mech->run_js('return htre_get_selection_state("v").hilitecolor;')
+	, 'rgb(255, 204, 221)');
 
 for (qw(left right)) {
 	HTRE_Set_Value($mech, "v", "");
@@ -328,7 +391,11 @@ for (qw(left right)) {
 	$mech->x_send_keys($_);
 	is(HTRE_Get_Value($mech, "v"), "<div style=\"text-align: $_;\">$_"
 			. "<br></div>");
+	is($mech->run_js('return htre_get_selection_state("v").justify'
+		. "$_;"), 'true');
 }
+is($mech->run_js('return htre_get_selection_state("v").justifycenter;')
+	, 'undefined');
 
 HTRE_Set_Value($mech, "v", "");
 $mech->x_click($mech->get_html_element_by_id("v_insertorderedlist"), 2, 2);
@@ -336,6 +403,8 @@ $mech->x_send_keys("aaa\nbbb");
 is(HTRE_Get_Value($mech, "v"), '<ol><li>aaa</li><li>bbb<br></li></ol>');
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
 	, '<OL><LI>aaa</LI><LI>bbb<BR/></LI></OL>');
+is($mech->run_js('return htre_get_selection_state("v").insertorderedlist;')
+	, 'true');
 
 HTRE_Set_Value($mech, "v", "");
 $mech->x_click($mech->get_html_element_by_id("v_insertunorderedlist"), 2, 2);
@@ -343,6 +412,10 @@ $mech->x_send_keys("aaa\nbbb");
 is(HTRE_Get_Value($mech, "v"), '<ul><li>aaa</li><li>bbb<br></li></ul>');
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
 	, '<UL><LI>aaa</LI><LI>bbb<BR/></LI></UL>');
+is($mech->run_js('return htre_get_selection_state("v").insertunorderedlist;')
+	, 'true');
+is($mech->run_js('return htre_get_selection_state("v").insertorderedlist;')
+	, 'undefined');
 
 HTRE_Set_Value($mech, "v", "");
 $mech->x_click($mech->get_html_element_by_id("v_indent"), 2, 2);
@@ -385,4 +458,36 @@ $mech->x_click($mech->get_html_element_by_id("foci"), 2, 2);
 $mech->x_send_keys('sa');
 is_deeply($mech->console_messages, []);
 is(HTRE_Get_Value($mech, "v"), 'sa');
+$mech->x_change_select($fn_sel, 8);
+$mech->x_send_keys('fa');
+is($mech->run_js('return htre_get_selection_state("v").fontname;'), 'Serif');
+is($mech->run_js('return htre_get_selection_state("v").bold;'), '');
+is_deeply($mech->console_messages, []);
 
+$mech->run_js(<<'ENDS');
+htre_listen_for_state_changes("v", function(n, sch) {
+	alert("sch " + sch.fontname + " " + n);
+}, 20);
+ENDS
+is_deeply($mech->console_messages, []) or exit 1;
+
+$mech->pull_alerts;
+$mech->x_send_keys('{RIG}');
+like($mech->pull_alerts, qr/sch Serif v/);
+
+$mech->x_click($mech->get_html_element_by_id("foci"), -3, -3);
+like($mech->pull_alerts, qr/sch Serif v/);
+
+$mech->x_click($mech->get_html_element_by_id("foci"), 3, 3);
+like($mech->pull_alerts, qr/sch Serif v/);
+
+$mech->x_send_keys("^(a)");
+$mech->run_js('htre_exec_command("v", "CreateLink", "a.com");');
+is(HTRE_Get_Value($mech, "v"), '<a href="a.com">sa<span style="font-family:'
+	. ' Serif;">fa</span></a>');
+
+$mech->x_click($mech->get_html_element_by_id("v"), 10, 10);
+is($mech->run_js('return htre_get_selection_state("v").link;'), 'a.com');
+
+$mech->x_click($mech->get_html_element_by_id("hide"), 3, 3);
+is_deeply($mech->console_messages, []) or exit 1;

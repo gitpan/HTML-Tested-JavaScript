@@ -46,23 +46,28 @@ function htcp_save_y_dimensions(el, e, ctx) {
 	ctx.el_y = parseFloat(el.style.top);
 }
 
+function _htcp_half_height(el) { return (parseFloat(el.offsetHeight) / 2); }
+function _htcp_half_width(el) { return (parseFloat(el.offsetWidth) / 2); }
+
 function htcp_move_by_x(el, e, ctx) {
 	var pos = htcp_client_x(e) - ctx.down_x + ctx.el_x;
-	var max = el.parentNode.offsetWidth - parseFloat(el.style.width);
+	var hw = _htcp_half_width(el);
+	var max = el.parentNode.offsetWidth - hw;
 	if (pos > max)
 		pos = max;
-	else if (pos < 0)
-		pos = 0;
+	else if (pos < -hw)
+		pos = -hw;
 	el.style.left = pos + "px";
 }
 
 function htcp_move_by_y(el, e, ctx) {
 	var pos = htcp_client_y(e) - ctx.down_y + ctx.el_y;
-	var max = el.parentNode.offsetHeight - parseFloat(el.style.height);
+	var hh = _htcp_half_height(el);
+	var max = el.parentNode.offsetHeight - hh;
 	if (pos > max)
 		pos = max;
-	else if (pos < 0)
-		pos = 0;
+	else if (pos < -hh)
+		pos = -hh;
 	el.style.top = pos + "px";
 }
 
@@ -106,8 +111,7 @@ function _htcp_set_rgb_indicators(name, r, g, b) {
 
 function _htcp_calculate_hue_rgb(name) {
 	var hup = document.getElementById(name + "_hue_pointer");
-	var h_y_raw = parseFloat(hup.style.top) * 100/186;
-	var c = parseInt(h_y_raw * 255/100);
+	var c = _htcp_calc_y(hup);
 	var n = 256/6, j = ((256/n) * (c % n));
 
 	var hue_r = parseInt(c<n?255:c<n*2?255-j:c<n*4?0:c<n*5?j:255);
@@ -118,12 +122,18 @@ function _htcp_calculate_hue_rgb(name) {
 	return [ hue_r, hue_g, hue_b ];
 }
 
+function _htcp_calc_y(ptr) {
+	var ry = 100 / ptr.parentNode.offsetHeight;
+	var ptr_y = (parseFloat(ptr.style.top) + _htcp_half_height(ptr)) * ry;
+	return parseInt(ptr_y * 255/100);
+}
+
 function _htcp_set_color_from_indicators(name) {
 	var ptr = document.getElementById(name + "_color_pointer");
-	var ptr_x = parseFloat(ptr.style.left) * 100/181;
-	var ptr_y = parseFloat(ptr.style.top) * 100/181;
+	var rx = 100 / ptr.parentNode.offsetWidth;
+	var ptr_x = (parseFloat(ptr.style.left) + _htcp_half_width(ptr)) * rx;
 	var ptr_x_col = parseInt(ptr_x * 255/100);
-	var ptr_y_col = parseInt(ptr_y * 255/100);
+	var ptr_y_col = _htcp_calc_y(ptr);
 
 	var [ hue_r, hue_g, hue_b ] = _htcp_calculate_hue_rgb(name);
 
@@ -135,11 +145,16 @@ function _htcp_set_color_from_indicators(name) {
 
 function htcp_set_indicators_from_rgb(name, r, g, b) {
 	var [ h, s, v ] = htcp_rgb_to_hsv(r, g, b);
-	document.getElementById(name + "_hue_pointer").style.top
-		= Math.round(186 - (h / 360) * 186) + "px";
-	var ptrs = document.getElementById(name + "_color_pointer").style;
-	ptrs.left = Math.round((s / 100) * 181) + "px";
-	ptrs.top = Math.round(((100 - v) / 100) * 181) + "px";
+	var hup = document.getElementById(name + "_hue_pointer");
+	var hph = hup.parentNode.offsetHeight;
+	var huo = hup.offsetHeight;
+	hup.style.top = (hph - (h / 360) * (hph + huo) + huo / 2) + "px";
+
+	var ptr = document.getElementById(name + "_color_pointer");
+	ptr.style.left = ((s / 100) * (ptr.parentNode.offsetWidth
+		+ ptr.offsetWidth) - ptr.offsetWidth / 2) + "px";
+	ptr.style.top = (((100 - v) / 100) * (ptr.parentNode.offsetHeight
+		+ ptr.offsetHeight) - ptr.offsetHeight / 2) + "px";
 	_htcp_calculate_hue_rgb(name);
 	_htcp_set_rgb_indicators(name, r, g, b);
 	_htcp_set_prev_color(name);
@@ -198,21 +213,8 @@ function _htcp_add_rgb_hook(name, sfx, hook) {
 	eb.addEventListener("change", hook, true);
 }
 
-function _htcp_set_style(ptr, cs, what) {
-	ptr.style[what] = parseFloat(cs[what]) ? cs[what] : "0px";
-}
-
-function _htcp_init_pointer(ptr) {
-	var cs = window.getComputedStyle(ptr, null);
-	_htcp_set_style(ptr, cs, "width");
-	_htcp_set_style(ptr, cs, "height");
-	_htcp_set_style(ptr, cs, "top");
-	_htcp_set_style(ptr, cs, "left");
-}
-
 function _htcp_init(name, hook) {
 	var ptr = document.getElementById(name + "_color_pointer");
-	_htcp_init_pointer(ptr);
 	var pctx = {};
 	htcp_listen_for_mouse_events(ptr, function(e) {
 		htcp_save_x_dimensions(ptr, e, pctx);
@@ -224,7 +226,6 @@ function _htcp_init(name, hook) {
 	}, function(e) { _htcp_set_prev_color(name); });
 
 	var hup = document.getElementById(name + "_hue_pointer");
-	_htcp_init_pointer(hup);
 	var hctx = {};
 	htcp_listen_for_mouse_events(hup, function(e) {
 		htcp_save_y_dimensions(hup, e, hctx);
@@ -237,8 +238,5 @@ function _htcp_init(name, hook) {
 		_htcp_add_rgb_hook(name, a, _htcp_on_rgb_enter);
 
 	_htcp_add_rgb_hook(name, "hex", _htcp_on_hex_enter);
-
-	_htcp_set_color_from_indicators(name);
-	_htcp_set_prev_color(name);
 	window["__htcp_" + name + "_hook"] = hook;
 }

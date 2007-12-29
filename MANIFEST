@@ -3,10 +3,7 @@ README
 LICENSE
 Makefile.PL
 javascript/color_picker.js
-javascript/images/color_pointerbg.gif
-javascript/images/hue_pointerbg.gif
-javascript/images/pickerbg.png
-javascript/images/huebg.png
+javascript/images/color_picker.png
 javascript/rich_edit.js
 javascript/serializer.js
 lib/HTML/Tested/JavaScript/Test/RichEdit.pm
