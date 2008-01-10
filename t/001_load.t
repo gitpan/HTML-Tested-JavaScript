@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 21;
+use Test::More tests => 22;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -161,19 +161,39 @@ like($cs[0], qr/Mismatch/);
 
 $obj->ht_set_widget_option("ser", "no_script", 1);
 $obj->ht_render($stash);
-is($stash->{ser}, '<script>
+is($stash->{ser}, '<script>//<![CDATA[
 var ser = {
 	"v0": "0",
 	"v1": "1",
 	"v2": "2",
 	"v3": ""
-};
+};//]]>
 </script>');
 
 ref($obj)->ht_set_widget_option(ser => no_script => 1);
 $obj = T3->new({ map { ("v$_", $_) } (0 .. 3) });
 $obj->ht_render($stash);
 unlike($stash->{ser}, qr/serializer\.js/);
+
+my $str = sprintf(<<ENDS
+%s
+<script>//<![CDATA[
+var fhhff = {
+	"v0": "0",
+	"v1": "wiewi1",
+	"v2": "2",
+	"v3": "dsdssd"
+};//]]>
+</script>
+dsids
+ENDS
+	, $stash->{ser});
+is(HTML::Tested::JavaScript::Serializer::Extract_Text('ser', $str), '{
+	"v0": "0",
+	"v1": "1",
+	"v2": "2",
+	"v3": "3"
+}');
 
 package LV;
 use base ::HTJS . "::Value";

@@ -72,15 +72,22 @@ sub render {
 	my $n = $self->name;
 	my $res = $caller->ht_get_widget_option($n, "no_script") ? ""
 			: HTML::Tested::JavaScript::Script_Include();
-	$res .= "<script>\nvar $n = {\n\t"
+	$res .= "<script>//<![CDATA[\nvar $n = {\n\t"
 		. join(",\n\t", grep { $_ } map {
 				my $r = $stash->{$_};
 				ref($r) ? $stash->{$_ . "_js"} : $r
 			} @{ $self->{_jses} })
-		. "\n};\n</script>";
+		. "\n};//]]>\n</script>";
 	$stash->{ $n } = $res;
 }
 
 sub validate { return (); }
+
+sub Extract_Text {
+	my ($n, $str) = @_;
+	my ($res) = ($str =~ m#<script>//<!\[CDATA\[\nvar $n = ({.*)#s);
+	$res =~ s#;//\]\]>\n</script>.*##s;
+	return $res;
+}
 
 1;

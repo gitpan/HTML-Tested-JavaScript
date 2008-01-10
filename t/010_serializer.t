@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 27;
+use Test::More tests => 29;
 use File::Temp qw(tempdir);
 use Mozilla::Mechanize::GUITester;
 use File::Slurp;
@@ -105,7 +105,7 @@ my $mech = Mozilla::Mechanize::GUITester->new(quiet => 1, visible => 0);
 my $url = URI::file->new_abs("$td/a.html")->as_string;
 ok($mech->get($url));
 is($mech->run_js('return ser.sv'), 'a');
-is_deeply($mech->console_messages, []);
+is_deeply($mech->console_messages, []) or exit 1;
 
 $mech->submit_form;
 like($mech->content, qr/hid.*=.*'b'/);
@@ -113,6 +113,14 @@ like($mech->content, qr/Content-Type[^\n]*application\/x-www-form-urlencoded/);
 
 # because of security we need to fetch it from daemon
 ok($mech->get("$d_url/td/a.html"));
+
+like($mech->run_js('return ht_serializer_get("/td/a.html").responseText')
+	, qr/CDATA/);
+
+is($mech->run_js('return ht_serializer_extract("ser"
+		, ht_serializer_get("/td/a.html").responseText)'), '{
+	"sv": "a"
+}');
 
 my $res = $mech->run_js("return ht_serializer_submit"
 		. "(ser, '$d_url/js', null).responseText");

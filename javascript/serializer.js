@@ -60,3 +60,17 @@ function ht_serializer_reset_form(form_id) {
 		delete form[ arr[i].name ];
 	}
 }
+
+function ht_serializer_get(url) {
+	var req = new XMLHttpRequest();
+	req.open("GET", url, false);
+	req.send(null);
+	return req;
+}
+
+function ht_serializer_extract(n, str) {
+	return str.replace(new RegExp("^[\\s\\S]*<script>//<!\\[CDATA\\[\\nvar "
+		+ n + " = ", "m"), "")
+			.replace(/;\/\/\]\]>\n<\/script>[\s\S]*$/m, "");
+}
+

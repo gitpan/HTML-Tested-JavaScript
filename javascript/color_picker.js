@@ -148,13 +148,13 @@ function htcp_set_indicators_from_rgb(name, r, g, b) {
 	var hup = document.getElementById(name + "_hue_pointer");
 	var hph = hup.parentNode.offsetHeight;
 	var huo = hup.offsetHeight;
-	hup.style.top = (hph - (h / 360) * (hph + huo) + huo / 2) + "px";
+	hup.style.top = (hph - (h / 360) * hph - huo / 2) + "px";
 
 	var ptr = document.getElementById(name + "_color_pointer");
-	ptr.style.left = ((s / 100) * (ptr.parentNode.offsetWidth
-		+ ptr.offsetWidth) - ptr.offsetWidth / 2) + "px";
-	ptr.style.top = (((100 - v) / 100) * (ptr.parentNode.offsetHeight
-		+ ptr.offsetHeight) - ptr.offsetHeight / 2) + "px";
+	ptr.style.left = ((s / 100) * ptr.parentNode.offsetWidth
+		- ptr.offsetWidth / 2) + "px";
+	ptr.style.top = (((100 - v) / 100) * ptr.parentNode.offsetHeight
+		- ptr.offsetHeight / 2) + "px";
 	_htcp_calculate_hue_rgb(name);
 	_htcp_set_rgb_indicators(name, r, g, b);
 	_htcp_set_prev_color(name);

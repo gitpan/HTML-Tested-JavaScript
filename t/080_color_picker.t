@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 110;
+use Test::More tests => 116;
 use File::Temp qw(tempdir);
 use Mozilla::Mechanize::GUITester;
 use File::Slurp;
@@ -252,6 +252,30 @@ is($hex->GetValue, 'ffffff');
 is($mech->get_element_style($prev_color, "background-color")
 	, "rgb(255, 255, 255)");
 
+$mech->run_js('htcp_set_indicators_from_rgb("cp", 0, 0, 0);');
+my $gcp_div = $mech->gesture($cp_div);
+my $gpoint = $mech->gesture($point);
+
+cmp_ok($gpoint->element_top, '>=', $gcp_div->element_top);
+
+my $cpdns = $cp_div->QueryInterface(Mozilla::DOM::NSHTMLElement->GetIID);
+cmp_ok($gpoint->element_top, '<=' , $gcp_div->element_top
+		+ $cpdns->GetOffsetHeight);
+
+$gcp_div = $mech->gesture($hue);
+$gpoint = $mech->gesture($hue_ptr);
+my $hns = $hue->QueryInterface(Mozilla::DOM::NSHTMLElement->GetIID);
+cmp_ok($gpoint->element_top, '>=', $gcp_div->element_top);
+cmp_ok($gpoint->element_top, '<=' , $gcp_div->element_top
+		+ $hns->GetOffsetHeight);
+
+$mech->run_js('htcp_set_indicators_from_rgb("cp", 255, 255, 0);');
+$gcp_div = $mech->gesture($cp_div);
+$gpoint = $mech->gesture($point);
+cmp_ok($gpoint->element_left, '>=', $gcp_div->element_left);
+cmp_ok($gpoint->element_left, '<=' , $gcp_div->element_left
+		+ $cpdns->GetOffsetWidth);
+
 $mech->run_js('htcp_set_indicators_from_rgb("cp", 7, 202, 218);');
 is($rr->GetValue, 7);
 is($rg->GetValue, 202);
@@ -260,11 +284,11 @@ is($mech->get_element_style($prev_color, "background-color")
 	, "rgb(7, 202, 218)");
 
 $mech->run_js('htcp_set_indicators_from_rgb("cp", 227, 202, 218);');
-is(px_to_int($mech->get_element_style($hue_ptr, "top")), 15); # ~20 - 4.5
-is(px_to_int($mech->get_element_style($point, "top")), 15);
-is(px_to_int($mech->get_element_style($point, "left")), 15);
+is(px_to_int($mech->get_element_style($hue_ptr, "top")), 14); # ~20 - 4.5
+is(px_to_int($mech->get_element_style($point, "top")), 14);
+is(px_to_int($mech->get_element_style($point, "left")), 14);
 
-is($mech->get_element_style($cp_div, "background-color"), 'rgb(255, 0, 168)');
+is($mech->get_element_style($cp_div, "background-color"), 'rgb(255, 0, 156)');
 is($mech->get_element_style($cur_color, "background-color")
 	, "rgb(227, 202, 218)");
 is($mech->get_element_style($prev_color, "background-color")
