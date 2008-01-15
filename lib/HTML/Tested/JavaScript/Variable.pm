@@ -13,9 +13,15 @@ sub encode_value {
 	return $val;
 }
 
+sub variable_value {
+	my ($self, $val) = @_;
+	return ($val eq "" || $val =~ /\D/) ? "\"$val\"" : $val;
+}
+
 sub value_to_string {
 	my ($self, $name, $val) = @_;
-	return "<script>\nvar $name = \"$val\";\n</script>";
+	return sprintf("<script>\nvar \%s = \%s;\n</script>", $name
+				, $self->variable_value($val));
 }
 
 1;

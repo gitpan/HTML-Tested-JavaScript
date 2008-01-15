@@ -3,6 +3,7 @@ use warnings FATAL => 'all';
 
 package HTML::Tested::JavaScript::Test::Serializer;
 use base 'HTML::Tested::Test::Value';
+use Text::Diff;
 
 sub _is_anyone_sealed {
 	my ($class, $e_root, $js) = @_;
@@ -25,6 +26,20 @@ sub is_marked_as_sealed {
 		return 1;
 	}
 	return undef;
+}
+
+sub check_text {
+	my ($class, $e_root, $name, $e_stash, $text) = @_;
+	my @res = $class->SUPER::check_text($e_root, $name, $e_stash, $text);
+	if (@res) {
+		my $his = HTML::Tested::JavaScript::Serializer::Extract_Text(
+				$name, $text);
+		my $mine = HTML::Tested::JavaScript::Serializer::Extract_Text(
+				$name, $e_stash->{$name});
+		$res[0] .= $his ? "\nThe diff is:\n" . diff(\$mine, \$his)
+				: "\nUnable to extract text for diff\n";
+	}
+	return @res;
 }
 
 package HTML::Tested::JavaScript::Test;

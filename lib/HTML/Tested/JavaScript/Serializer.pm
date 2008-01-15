@@ -86,7 +86,7 @@ sub validate { return (); }
 sub Extract_Text {
 	my ($n, $str) = @_;
 	my ($res) = ($str =~ m#<script>//<!\[CDATA\[\nvar $n = ({.*)#s);
-	$res =~ s#;//\]\]>\n</script>.*##s;
+	($res =~ s#;//\]\]>\n</script>.*##s) if $res;
 	return $res;
 }
 

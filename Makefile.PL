@@ -10,6 +10,7 @@ WriteMakefile(
 	    		'Mozilla::Mechanize::GUITester' => 0.12,
 			'File::Slurp' => '',
 			'HTTP::Daemon' => '',
+			'Text::Diff' => "",
 			'HTTP::Request::Params' => '',
 			'Mozilla::SourceViewer' => '0.05'
 	},

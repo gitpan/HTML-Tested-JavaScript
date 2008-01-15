@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 22;
+use Test::More tests => 28;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -39,13 +39,13 @@ $obj = T2->new({ l => [ map { T->new({ v => $_ }) } (1 .. 2) ] });
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => '"v": "1"'
+	v => '"v": 1'
 }, {
-	v => '"v": "2"'
+	v => '"v": 2'
 }], l_js => '"l": [ {
-	"v": "1"
+	"v": 1
 }, {
-	"v": "2"
+	"v": 2
 } ]'}) or diag(Dumper($stash));
 
 $obj->l->[0]->v(undef);
@@ -53,14 +53,14 @@ $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
 	v => '"v": ""'
 }, {
-	v => '"v": "2"'
+	v => '"v": 2'
 }], l_js => '"l": [ {
 	"v": ""
 }, {
-	"v": "2"
+	"v": 2
 } ]'}) or diag(Dumper($stash));
 is_deeply([ HTML::Tested::Test->check_stash(ref($obj), $stash,
-		{ l => [ { }, { v => "2" } ] }) ], []);
+		{ l => [ { }, { v => 2 } ] }) ], []);
 
 $obj->l->[0]->v(1);
 
@@ -69,17 +69,17 @@ $obj = T2->new({ l => [ map { T->new({ v => $_, v2 => $_ }) } (1 .. 2) ] });
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => '"v": "1"',
-	v2 => '"v2": "1"'
+	v => '"v": 1',
+	v2 => '"v2": 1'
 }, {
-	v => '"v": "2"',
-	v2 => '"v2": "2"'
+	v => '"v": 2',
+	v2 => '"v2": 2'
 } ], l_js => '"l": [ {
-	"v": "1",
-	"v2": "1"
+	"v": 1,
+	"v2": 1
 }, {
-	"v": "2",
-	"v2": "2"
+	"v": 2,
+	"v2": 2
 } ]'}) or diag(Dumper($stash));
 
 is_deeply([ HTML::Tested::Test->check_stash(ref($obj), $stash,
@@ -92,19 +92,19 @@ $obj = T2->new({ l => [ map { T->new({ v => $_, v2 => $_, v3 => $_ }) }
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => '"v": "1"',
-	v2 => '"v2": "1"',
-	v3 => "1"
+	v => '"v": 1',
+	v2 => '"v2": 1',
+	v3 => 1
 }, {
-	v => '"v": "2"',
-	v2 => '"v2": "2"',
+	v => '"v": 2',
+	v2 => '"v2": 2',
 	v3 => '2'
 } ], l_js => '"l": [ {
-	"v": "1",
-	"v2": "1"
+	"v": 1,
+	"v2": 1
 }, {
-	"v": "2",
-	"v2": "2"
+	"v": 2,
+	"v2": 2
 } ]'}) or diag(Dumper($stash));
 
 $obj->l->[0]->v("</scRipt>\n");
@@ -115,16 +115,16 @@ $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
 	v => '"v": "<\\/scRipt>\n"',
 	v2 => '"v2": "\\\\f"',
-	v3 => "1"
+	v3 => 1
 }, {
-	v => '"v": "2"',
+	v => '"v": 2',
 	v2 => '"v2": "dd\\"dd"',
 	v3 => '2'
 } ], l_js => '"l": [ {
 	"v": "<\\/scRipt>\n",
 	"v2": "\\\\f"
 }, {
-	"v": "2",
+	"v": 2,
 	"v2": "dd\\"dd"
 } ]'}) or diag(Dumper($stash));
 
@@ -163,9 +163,9 @@ $obj->ht_set_widget_option("ser", "no_script", 1);
 $obj->ht_render($stash);
 is($stash->{ser}, '<script>//<![CDATA[
 var ser = {
-	"v0": "0",
-	"v1": "1",
-	"v2": "2",
+	"v0": 0,
+	"v1": 1,
+	"v2": 2,
 	"v3": ""
 };//]]>
 </script>');
@@ -179,9 +179,9 @@ my $str = sprintf(<<ENDS
 %s
 <script>//<![CDATA[
 var fhhff = {
-	"v0": "0",
+	"v0": 0,
 	"v1": "wiewi1",
-	"v2": "2",
+	"v2": 2,
 	"v3": "dsdssd"
 };//]]>
 </script>
@@ -189,11 +189,25 @@ dsids
 ENDS
 	, $stash->{ser});
 is(HTML::Tested::JavaScript::Serializer::Extract_Text('ser', $str), '{
-	"v0": "0",
-	"v1": "1",
-	"v2": "2",
-	"v3": "3"
+	"v0": 0,
+	"v1": 1,
+	"v2": 2,
+	"v3": 3
 }');
+
+is(HTML::Tested::JavaScript::Serializer::Extract_Text('ser', "sss"), undef);
+
+is_deeply([ HTML::Tested::Test->check_text(ref($obj), $str, { ser => ""
+	, v0 => 0, v1 => 1, v2 => 2, v3 => 3 }) ], []);
+
+my @cherr = HTML::Tested::Test->check_text(ref($obj), $str, { ser => ""
+		, v0 => 0, v2 => 2, v3 => 3 });
+is(@cherr, 1);
+like($cherr[0], qr/\+.*v1/);
+
+@cherr = HTML::Tested::Test->check_text(ref($obj), "ssss", { ser => "" });
+is(@cherr, 1);
+like($cherr[0], qr/Unable to extract text/);
 
 package LV;
 use base ::HTJS . "::Value";
@@ -211,12 +225,12 @@ $obj = LT->new({ l => [ map { LI->new({ v => $_ }) } (1 .. 2) ] });
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => '"v": "1"'
+	v => '"v": 1'
 }, {
-	v => '"v": "2"'
+	v => '"v": 2'
 }], l_js => '"l": [ {
-	"v": "1"
+	"v": 1
 }, {
-	"v": "2"
+	"v": 2
 } ]'}) or diag(Dumper($stash));
 
