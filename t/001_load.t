@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 28;
+use Test::More tests => 29;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -158,6 +158,7 @@ like($@, qr/Unable to find.*xxx/);
 
 @cs = HTML::Tested::Test->check_stash(ref($obj), $stash, { ser => '' });
 like($cs[0], qr/Mismatch/);
+like($cs[0], qr/\+.*v1/);
 
 $obj->ht_set_widget_option("ser", "no_script", 1);
 $obj->ht_render($stash);

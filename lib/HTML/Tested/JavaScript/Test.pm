@@ -28,6 +28,16 @@ sub is_marked_as_sealed {
 	return undef;
 }
 
+sub check_stash {
+	my ($class, $e_root, $name, $e_stash, $r_stash) = @_;
+	my @res = $class->SUPER::check_stash($e_root, $name
+			, $e_stash, $r_stash);
+	my ($ev, $rv) = ($e_stash->{$name}, $r_stash->{$name});
+	$res[0] .= "\nThe diff is:\n" . diff(\$ev, \$rv)
+			if (@res && $ev && $rv);
+	return @res;
+}
+
 sub check_text {
 	my ($class, $e_root, $name, $e_stash, $text) = @_;
 	my @res = $class->SUPER::check_text($e_root, $name, $e_stash, $text);

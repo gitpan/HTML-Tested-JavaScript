@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 10;
+use Test::More tests => 14;
 use Data::Dumper;
 use HTTP::Daemon;
 use Mozilla::Mechanize::GUITester;
@@ -89,6 +89,38 @@ is($sel->GetSelectedIndex, 1);
 }
 $mech->x_send_keys("");
 like($mech->content, qr/GET.*sel=3/);
+
+package H2;
+use base 'HTML::Tested';
+__PACKAGE__->ht_add_widget(::HTJ . "::AutoSelect", sel => href => "?hhh=");
+
+package main;
+
+$obj = H2->new({ sel => [ [ 1, "One" ], [ 2, "Two", 1 ], [ 3, "Three" ] ] });
+$stash = {};
+$obj->ht_render($stash);
+
+write_file("$td/b.html", <<ENDS);
+<html>
+<body>
+$stash->{sel}
+</body>
+</html>
+ENDS
+ok($mech->get("$d_url/td/b.html"));
+
+$sel = $mech->get_html_element_by_id("sel", "Select");
+isnt($sel, undef);
+is($sel->GetSelectedIndex, 1);
+
+# Silence gtk_main_quit warnings
+{
+	local *STDERR;
+	open(STDERR, ">/dev/null");
+	$mech->x_change_select($sel, 2);
+}
+$mech->x_send_keys("");
+like($mech->content, qr/GET.*hhh=3/);
 
 kill(9, $pid);
 waitpid($pid, 0);
