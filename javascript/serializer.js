@@ -1,6 +1,8 @@
 function _ht_flatten(pairs, data, prefix) {
 	for(var n in data) {
 		var v = data[n];
+		if (!v && v != 0)
+			v = "";
 		if (v instanceof Array)
 			for (var i = 0; i < v.length; i++)
 				_ht_flatten(pairs, v[i],
@@ -16,21 +18,29 @@ function ht_serializer_flatten(data) {
 	return pairs;
 }
 
-function ht_serializer_submit(val, url, cb) {
+/* Synch requests are bad: block FF 3.0. Don't do them at all */
+function _ht_ser_open_request(method, url, cb) {
 	var req = new XMLHttpRequest();
-	if (cb)
-		req.onreadystatechange = function() {
-			if (req.readyState == 4)
-				cb(req);
-		};
-	req.open("POST", url, !!cb);
-	req.setRequestHeader("Content-Type"
-			, "application/x-www-form-urlencoded");
-	req.send(ht_serializer_flatten(val).map(function(a) {
+	req.onreadystatechange = function() {
+		if (req.readyState == 4)
+			cb(req);
+	};
+	req.open(method, url, true);
+	return req;
+}
+
+function ht_serializer_encode(val) {
+	return ht_serializer_flatten(val).map(function(a) {
 		return a[0] + '=' + encodeURIComponent(a[1])
 					.replace(/%20/g, "+");
-	}).join('&'));
-	return req;
+	}).join('&');
+}
+
+function ht_serializer_submit(val, url, cb) {
+	var req = _ht_ser_open_request("POST", url, cb);
+	req.setRequestHeader("Content-Type"
+			, "application/x-www-form-urlencoded");
+	req.send(ht_serializer_encode(val));
 }
 
 function ht_serializer_prepare_form(form_id, ser) {
@@ -61,11 +71,8 @@ function ht_serializer_reset_form(form_id) {
 	}
 }
 
-function ht_serializer_get(url) {
-	var req = new XMLHttpRequest();
-	req.open("GET", url, false);
-	req.send(null);
-	return req;
+function ht_serializer_get(url, cb) {
+	_ht_ser_open_request("GET", url, cb).send(null);
 }
 
 function ht_serializer_extract(n, str) {
@@ -74,3 +81,62 @@ function ht_serializer_extract(n, str) {
 			.replace(/;\/\/\]\]>\n<\/script>[\s\S]*$/m, "");
 }
 
+function ht_serializer_diff_hash(old_o, new_o, res) {
+	var cnt = 0;
+	for (var k in new_o) {
+		if (k in old_o && old_o[k] == new_o[k])
+			continue;
+		res[k] = new_o[k];
+		cnt++;
+	}
+	for (var k in old_o) {
+		if (k in new_o)
+			continue;
+		res[k] = undefined;
+		cnt++;
+	}
+	return cnt;
+}
+
+function _ht_ser_key(keys, o) {
+	return keys.map(function(k) { return o[k]; }).join("");
+}
+
+function _ht_ser_set_key(keys, from, to) {
+	for (var i = 0; i < keys.length; i++)
+		to[ keys[i] ] = from[ keys[i] ];
+}
+
+function ht_serializer_diff_array(keys, before, after, res, del) {
+	var bhash = {};
+	var indexes = {};
+	for (var i = 0; i < before.length; i++) {
+		var k = _ht_ser_key(keys, before[i]);
+		bhash[k] = before[i];
+		indexes[k] = i;
+	}
+
+	var cnt = 0;
+	for (var i = 0; i < after.length; i++) {
+		var k = _ht_ser_key(keys, after[i]);
+		var be = bhash[k];
+		var af = {};
+		if (be) {
+			if (ht_serializer_diff_hash(be, after[i], af)
+					|| indexes[k] != i)
+				cnt++;
+			_ht_ser_set_key(keys, after[i], af);
+			delete bhash[k];
+		} else {
+			af = after[i];
+			cnt++;
+		}
+		res.push(af);
+	}
+	for (var i in bhash) {
+		var n = {};
+		_ht_ser_set_key(keys, bhash[i], n);
+		del.push(n);
+	}
+	return cnt + del.length;
+}

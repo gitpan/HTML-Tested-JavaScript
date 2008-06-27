@@ -26,4 +26,5 @@ t/030_seal.t
 t/020_install.t
 t/010_serializer.t
 t/001_load.t
+t/090_ser_diff.t
 META.yml                                 Module meta-data (added by MakeMaker)

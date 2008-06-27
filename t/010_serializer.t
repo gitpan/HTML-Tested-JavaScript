@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 29;
+use Test::More tests => 31;
 use File::Temp qw(tempdir);
 use Mozilla::Mechanize::GUITester;
 use File::Slurp;
@@ -62,8 +62,8 @@ if (!$pid) {
 			my $resp = HTTP::Response->new(200);
 			my $tested = $tc->ht_load_from_params(
 				map { $_, $freq->param($_) } $freq->param);
-			$resp->content("<html><body><pre>"
-				. $r->as_string
+			my $s = HTML::Entities::encode_entities($r->as_string);
+			$resp->content("<html><body><pre>\n$s"
 				. Dumper($tested) . "</pre></body></html>");
 			$c->send_response($resp);
 		}
@@ -114,18 +114,22 @@ like($mech->content, qr/Content-Type[^\n]*application\/x-www-form-urlencoded/);
 # because of security we need to fetch it from daemon
 ok($mech->get("$d_url/td/a.html"));
 
-like($mech->run_js('return ht_serializer_get("/td/a.html").responseText')
-	, qr/CDATA/);
+$mech->pull_alerts;
+$mech->run_js('return ht_serializer_get("/td/a.html"'
+			. ', function(r) { window.rt = r.responseText; })');
+$mech->x_send_keys("");
+is_deeply($mech->console_messages, []) or exit 1;
+like($mech->run_js('return window.rt'), qr/CDATA/);
 
-is($mech->run_js('return ht_serializer_extract("ser"
-		, ht_serializer_get("/td/a.html").responseText)'), '{
+is($mech->run_js('return ht_serializer_extract("ser", window.rt)'), '{
 	"sv": "a"
 }');
 
-my $res = $mech->run_js("return ht_serializer_submit"
-		. "(ser, '$d_url/js', null).responseText");
-like($res, qr/'sv' => 'a'/);
+$mech->run_js("return ht_serializer_submit(ser, '$d_url/js'"
+		. ", function(r) { window.rt = r.responseText; })");
+$mech->x_send_keys("");
 is_deeply($mech->console_messages, []);
+like($mech->run_js('return window.rt'), qr/'sv' => 'a'/);
 
 $obj = T2->new({ jv => '"a', l => [ map { T->new({ sv => "f&$_" }) }
 			(1 .. 2) ] });
@@ -155,8 +159,9 @@ ENDS
 
 # Run events loop
 $mech->x_send_keys(""); 
+is_deeply($mech->console_messages, []) or diag($mech->content);
 
-$res = $mech->pull_alerts;
+my $res = $mech->pull_alerts;
 like($res, qr/'l' => /);
 like($res, qr/'sv' => 'f%261'/);
 like($res, qr/'sv' => 'f%262'/);
