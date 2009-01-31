@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 115;
+use Test::More tests => 118;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
@@ -31,7 +31,7 @@ my @v_fn = (v_fontname => <<'ENDS');
 <option value="Times New Roman">Times New Roman</option>
 <option value="Courier New">Courier New</option>
 <option value="Georgia">Georgia</option>
-<option value="Trebuchet">Trebuchet</option>
+<option value="Trebuchet MS">Trebuchet MS</option>
 <option value="Verdana">Verdana</option>
 <option value="Serif">Serif</option>
 </select>
@@ -225,7 +225,10 @@ HTRE_Set_Value($mech, "v", '<span style="font-weight: bold;">'
 	. '<script>var _a;</script>hoho hoho<br></span>');
 $mech->pull_alerts;
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<SPAN style="font-weight: bold;">hoho hoho<BR/></SPAN>');
+	, '<SPAN style="font-weight: bold;">hoho hoho<BR/></SPAN>') or do {
+		diag($mech->pull_alerts);
+		exit 1;
+};
 is_deeply($mech->console_messages, []) or exit 1;
 
 HTRE_Set_Value($mech, "v", '<span style="font-weight: bold;" onclick="boom();">'
@@ -488,6 +491,19 @@ is(HTRE_Get_Value($mech, "v"), '<a href="a.com">sa<span style="font-family:'
 
 $mech->x_click($mech->get_html_element_by_id("v"), 10, 10);
 is($mech->run_js('return htre_get_selection_state("v").link;'), 'a.com');
+
+$mech->x_change_select($fn_sel, 6);
+$mech->x_send_keys('treb');
+is($mech->run_js('return htre_get_selection_state("v").fontname;')
+	, 'Trebuchet MS');
+
+is($mech->run_js(<<'ENDS'), '<DIV><IMG src="foo"/><FOO bar="goo"/></DIV>')
+htre_tag_whitelist["FOO"] = 1;
+htre_attr_whitelist["bar"] = 1;
+return htre_escape("<DIV><IMG src=\"foo\" /><FOO bar=\"goo\" /></DIV>");
+ENDS
+	or do { diag($mech->pull_alerts); exit 1; };
+is_deeply($mech->console_messages, []) or exit 1;
 
 $mech->x_click($mech->get_html_element_by_id("hide"), 3, 3);
 is_deeply($mech->console_messages, []) or exit 1;

@@ -2,10 +2,12 @@ MANIFEST
 README
 LICENSE
 Makefile.PL
+t/100_zoompan.t
 javascript/color_picker.js
 javascript/images/color_picker.png
 javascript/rich_edit.js
 javascript/serializer.js
+t/tiger.xhtml
 lib/HTML/Tested/JavaScript/Test/RichEdit.pm
 lib/HTML/Tested/JavaScript/Test.pm
 lib/HTML/Tested/JavaScript/ColorPicker.pm

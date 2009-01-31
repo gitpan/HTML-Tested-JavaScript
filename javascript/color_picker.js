@@ -111,7 +111,7 @@ function _htcp_set_rgb_indicators(name, r, g, b) {
 
 function _htcp_calculate_hue_rgb(name) {
 	var hup = document.getElementById(name + "_hue_pointer");
-	var c = _htcp_calc_y(hup);
+	var c = _htcp_calc_color(hup);
 	var n = 256/6, j = ((256/n) * (c % n));
 
 	var hue_r = parseInt(c<n?255:c<n*2?255-j:c<n*4?0:c<n*5?j:255);
@@ -122,18 +122,19 @@ function _htcp_calculate_hue_rgb(name) {
 	return [ hue_r, hue_g, hue_b ];
 }
 
-function _htcp_calc_y(ptr) {
-	var ry = 100 / ptr.parentNode.offsetHeight;
-	var ptr_y = (parseFloat(ptr.style.top) + _htcp_half_height(ptr)) * ry;
-	return parseInt(ptr_y * 255/100);
+function _htcp_calc_ratio(ptr) {
+	var ry = 1 / ptr.parentNode.offsetHeight;
+	return (parseFloat(ptr.style.top) + _htcp_half_height(ptr)) * ry;
 }
+
+function _htcp_calc_color(ptr) { return parseInt(_htcp_calc_ratio(ptr) * 255); }
 
 function _htcp_set_color_from_indicators(name) {
 	var ptr = document.getElementById(name + "_color_pointer");
 	var rx = 100 / ptr.parentNode.offsetWidth;
 	var ptr_x = (parseFloat(ptr.style.left) + _htcp_half_width(ptr)) * rx;
 	var ptr_x_col = parseInt(ptr_x * 255/100);
-	var ptr_y_col = _htcp_calc_y(ptr);
+	var ptr_y_col = _htcp_calc_color(ptr);
 
 	var [ hue_r, hue_g, hue_b ] = _htcp_calculate_hue_rgb(name);
 
@@ -239,4 +240,44 @@ function _htcp_init(name, hook) {
 
 	_htcp_add_rgb_hook(name, "hex", _htcp_on_hex_enter);
 	window["__htcp_" + name + "_hook"] = hook;
+}
+
+function _htzp_view_size(par, pos, sz, k) {
+	var nsz = par.baseVal.value * k;
+	return pos - (nsz - sz) / 2;
+}
+
+function _htzp_set_zoom(ptr, z_factor, c) {
+	var k = 1/Math.pow(z_factor, _htcp_calc_ratio(ptr) - 0.5);
+	c.g.setAttribute("transform", c.tr + " scale(" + k + ", " + k + ")");
+}
+
+function htzp_init(ptr_name, range) {
+	var ptr = document.getElementById(ptr_name);
+	var he = (ptr.parentNode.offsetHeight - ptr.offsetHeight) / 2;
+	ptr.style.top = he + "px";
+
+	var svg = document.getElementsByTagName("svg")[0];
+	var hctx = { g: document.getElementsByTagName("g")[0] };
+	hctx.tr = hctx.g.getAttribute("transform");
+	htcp_listen_for_mouse_events(ptr, function(e) {
+		htcp_save_y_dimensions(ptr, e, hctx);
+	}, function(e) {
+		htcp_move_by_y(ptr, e, hctx);
+		_htzp_set_zoom(ptr, range * range, hctx);
+	}, function(e) {});
+
+	var pan_c = {};
+	htcp_listen_for_mouse_events(svg, function(e) {
+		pan_c.down_x = htcp_client_x(e);
+		pan_c.down_y = htcp_client_y(e);
+		pan_c.view_box = svg.getAttribute("viewBox").split(" ");
+	}, function(e) {
+		var pos_x = -(htcp_client_x(e) - pan_c.down_x)
+				+ Number(pan_c.view_box[0]);
+		var pos_y = -(htcp_client_y(e) - pan_c.down_y)
+				+ Number(pan_c.view_box[1]);
+		svg.setAttribute("viewBox", pos_x + " " + pos_y
+			+ " " + pan_c.view_box[2] + " " + pan_c.view_box[3]);
+	}, function(e) {});
 }

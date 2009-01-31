@@ -122,15 +122,15 @@ function htre_add_onchange_listener(id, func) {
 	htre_document(id).addEventListener("blur", func, false);
 }
 
-var _htre_tag_whitelist = { SPAN: 1, BR: 1, P: 1, "#text": 1, HTRE: 1
-	, FONT: 1, DIV: 1, OL: 1, LI: 1, UL: 1, A: 1 };
-var _htre_attr_whitelist = { style: 1, size: 1, href: 1 };
+var htre_tag_whitelist = { SPAN: 1, BR: 1, P: 1, "#text": 1, HTRE: 1
+	, FONT: 1, DIV: 1, OL: 1, LI: 1, UL: 1, A: 1, IMG: 1 };
+var htre_attr_whitelist = { style: 1, size: 1, href: 1, src: 1 };
 function _htre_escape_filter(doc) {
 	for each (var d in doc.childNodes) {
 		if (!d || !d.nodeName)
 			continue;
 
-		if (!_htre_tag_whitelist[d.nodeName]) {
+		if (!htre_tag_whitelist[d.nodeName]) {
 			d.parentNode.removeChild(d);
 			continue;
 		}
@@ -138,7 +138,7 @@ function _htre_escape_filter(doc) {
 		for each (var a in d.attributes) {
 			if (!a || !a.nodeName)
 				continue;
-			if (!_htre_attr_whitelist[a.nodeName])
+			if (!htre_attr_whitelist[a.nodeName])
 				d.removeAttribute(a.name);
 		}
 

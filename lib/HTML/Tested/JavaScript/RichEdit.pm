@@ -10,7 +10,7 @@ sub new {
 	my ($class, $parent, $name, @more) = @_;
 	my $self = $class->SUPER::new($parent, $name, @more);
 	my @fonts = map { [ $_, $_ ] } ('Arial', 'Courier', 'Times New Roman'
-		, 'Courier New', 'Georgia', 'Trebuchet', 'Verdana', 'Serif');
+		, 'Courier New', 'Georgia', 'Trebuchet MS', 'Verdana', 'Serif');
 	$parent->ht_add_widget('HTML::Tested::Value::DropDown'
 		, "$name\_fontname"
 		, default_value => [ [ "", "Font" ], @fonts ]);
