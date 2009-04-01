@@ -13,6 +13,7 @@ WriteMakefile(
 			'Text::Diff' => "",
 			'HTTP::Request::Params' => '',
 			'Mozilla::SourceViewer' => '0.05'
+			, 'Gtk2::WebKit::Mechanize' => ''
 	},
 );
 

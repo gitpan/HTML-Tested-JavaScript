@@ -10,6 +10,8 @@ sub encode_value {
 	$val =~ s#/#\\/#g; # is needed for </script>
 	$val =~ s/"/\\"/g;
 	$val =~ s/\n/\\n/g;
+	$val =~ s/\r//g;
+	$val =~ s/[^[:print:]\n\t]+//g;
 	return $val;
 }
 

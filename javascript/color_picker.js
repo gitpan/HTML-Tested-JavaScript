@@ -136,25 +136,25 @@ function _htcp_set_color_from_indicators(name) {
 	var ptr_x_col = parseInt(ptr_x * 255/100);
 	var ptr_y_col = _htcp_calc_color(ptr);
 
-	var [ hue_r, hue_g, hue_b ] = _htcp_calculate_hue_rgb(name);
+	var h = _htcp_calculate_hue_rgb(name);
 
-	var r = Math.round((1-(1-(hue_r/255))*(ptr_x_col/255))*(255-ptr_y_col));
-	var g = Math.round((1-(1-(hue_g/255))*(ptr_x_col/255))*(255-ptr_y_col));
-	var b = Math.round((1-(1-(hue_b/255))*(ptr_x_col/255))*(255-ptr_y_col));
+	var r = Math.round((1-(1-(h[0]/255))*(ptr_x_col/255))*(255-ptr_y_col));
+	var g = Math.round((1-(1-(h[1]/255))*(ptr_x_col/255))*(255-ptr_y_col));
+	var b = Math.round((1-(1-(h[2]/255))*(ptr_x_col/255))*(255-ptr_y_col));
 	_htcp_set_rgb_indicators(name, r, g, b);
 }
 
 function htcp_set_indicators_from_rgb(name, r, g, b) {
-	var [ h, s, v ] = htcp_rgb_to_hsv(r, g, b);
+	var hsv = htcp_rgb_to_hsv(r, g, b);
 	var hup = document.getElementById(name + "_hue_pointer");
 	var hph = hup.parentNode.offsetHeight;
 	var huo = hup.offsetHeight;
-	hup.style.top = (hph - (h / 360) * hph - huo / 2) + "px";
+	hup.style.top = (hph - (hsv[0] / 360) * hph - huo / 2) + "px";
 
 	var ptr = document.getElementById(name + "_color_pointer");
-	ptr.style.left = ((s / 100) * ptr.parentNode.offsetWidth
+	ptr.style.left = ((hsv[1] / 100) * ptr.parentNode.offsetWidth
 		- ptr.offsetWidth / 2) + "px";
-	ptr.style.top = (((100 - v) / 100) * ptr.parentNode.offsetHeight
+	ptr.style.top = (((100 - hsv[2]) / 100) * ptr.parentNode.offsetHeight
 		- ptr.offsetHeight / 2) + "px";
 	_htcp_calculate_hue_rgb(name);
 	_htcp_set_rgb_indicators(name, r, g, b);
@@ -198,9 +198,10 @@ function _htcp_on_rgb_enter(e) {
 
 function _htcp_on_hex_enter(e) {
 	var inp = e.currentTarget;
-	var [ r, g, b ] = htcp_int_to_rgb(parseInt("0x" + inp.value));
-	_htcp_set_rgb_indicators(name, r, g, b);
-	htcp_set_indicators_from_rgb(inp.id.replace(/_rgb_hex$/, ""), r, g, b);
+	var c = htcp_int_to_rgb(parseInt("0x" + inp.value));
+	_htcp_set_rgb_indicators(name, c[0], c[1], c[2]);
+	htcp_set_indicators_from_rgb(inp.id.replace(/_rgb_hex$/, "")
+		, c[0], c[1], c[2]);
 }
 
 function _htcp_add_rgb_hook(name, sfx, hook) {
@@ -235,8 +236,9 @@ function _htcp_init(name, hook) {
 		_htcp_set_color_from_indicators(name);
 	}, function(e) { _htcp_set_prev_color(name); });
 
-	for each (var a in [ "r", "g", "b" ])
-		_htcp_add_rgb_hook(name, a, _htcp_on_rgb_enter);
+	_htcp_add_rgb_hook(name, "r", _htcp_on_rgb_enter);
+	_htcp_add_rgb_hook(name, "g", _htcp_on_rgb_enter);
+	_htcp_add_rgb_hook(name, "b", _htcp_on_rgb_enter);
 
 	_htcp_add_rgb_hook(name, "hex", _htcp_on_hex_enter);
 	window["__htcp_" + name + "_hook"] = hook;

@@ -8,6 +8,7 @@ javascript/images/color_picker.png
 javascript/rich_edit.js
 javascript/serializer.js
 t/tiger.xhtml
+t/110_webkit.t
 lib/HTML/Tested/JavaScript/Test/RichEdit.pm
 lib/HTML/Tested/JavaScript/Test.pm
 lib/HTML/Tested/JavaScript/ColorPicker.pm

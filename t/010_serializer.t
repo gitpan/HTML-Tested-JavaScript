@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 31;
+use Test::More tests => 34;
 use File::Temp qw(tempdir);
 use Mozilla::Mechanize::GUITester;
 use File::Slurp;
@@ -11,6 +11,7 @@ use HTTP::Daemon;
 use HTML::Tested::Test::Request;
 use Data::Dumper;
 use File::Basename qw(dirname);
+use Encode;
 use Cwd qw(abs_path);
 
 BEGIN { use_ok('HTML::Tested::JavaScript::Serializer');
@@ -186,6 +187,25 @@ like($str, qr/"l":/);
 ok($mech->get("$d_url/td/a.html"));
 is_deeply($mech->console_messages, []) or diag($mech->content);
 is($mech->run_js('return ser.l.length'), 0);
+
+$obj = T2->new({ jv => Encode::decode_utf8("\r\tЛист\t\r"), l => [] });
+$stash = {};
+$obj->ht_render($stash);
+
+$str = sprintf(<<ENDS, $stash->{ser});
+<html>
+<head>
+%s
+</head>
+<body></body>
+</html>
+ENDS
+$str = Encode::encode_utf8($str);
+like($str, qr/Лист/);
+
+write_file("$td/a.html", $str);
+ok($mech->get("$d_url/td/a.html"));
+is_deeply($mech->console_messages, []) or diag($mech->content);
 
 kill(9, $pid);
 waitpid($pid, 0);

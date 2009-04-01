@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                HTML-Tested-JavaScript
-version:             0.14
+version:             0.15
 abstract:            HTML::Tested JavaScript helpers
 license:             ~
 author:              
@@ -9,6 +9,7 @@ generated_by:        ExtUtils::MakeMaker version 6.42
 distribution_type:   module
 requires:     
     File::Slurp:                   
+    Gtk2::WebKit::Mechanize:       
     HTML::Tested:                  0.48
     HTTP::Daemon:                  
     HTTP::Request::Params:         
