@@ -490,7 +490,8 @@ is(HTRE_Get_Value($mech, "v"), '<a href="a.com">sa<span style="font-family:'
 	. ' Serif;">fa</span></a>');
 
 $mech->x_click($mech->get_html_element_by_id("v"), 10, 10);
-is($mech->run_js('return htre_get_selection_state("v").link;'), 'a.com');
+is($mech->run_js('return htre_get_selection_state("v").link;')
+	, "file://$td/a.com"); # Starting with FF 3.0.0.10 full link is returned
 
 $mech->x_change_select($fn_sel, 6);
 $mech->x_send_keys('treb');

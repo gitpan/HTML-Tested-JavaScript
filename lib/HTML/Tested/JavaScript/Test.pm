@@ -1,16 +1,42 @@
 use strict;
 use warnings FATAL => 'all';
 
+package HTML::Tested::JavaScript::Test::Serializer::Array;
+use base 'HTML::Tested::Test::Value';
+
+sub handle_sealed {
+	my ($class, $e_root, $name, $e_val, $r_val, $err) = @_;
+	my @e;
+	my @res = $class->SUPER::handle_sealed($e_root, $name
+			, $e_val, $r_val, \@e);
+	push @$err, @e if (@e && !(@{ $e_root->$name } == 0
+					&& $e[0] =~ /wasn't sealed/));
+	return @res;
+}
+
+sub convert_to_sealed {
+	my ($self, $val) = @_;
+	my $seal = HTML::Tested::Seal->instance;
+	return [ map { $seal->encrypt($_) } @$val ];
+}
+
+sub convert_to_param {
+	my ($class, $obj_class, $r, $name, $val) = @_;
+	return $class->SUPER::convert_to_param($obj_class, $r, $name
+			, join(",", @$val));
+}
+
 package HTML::Tested::JavaScript::Test::Serializer;
 use base 'HTML::Tested::Test::Value';
 use Text::Diff;
 
 sub _is_anyone_sealed {
 	my ($class, $e_root, $js) = @_;
-	return 1 if $class->SUPER::is_marked_as_sealed($e_root, $js);
+	return $class->SUPER::is_marked_as_sealed($e_root, $js);
 	my $a = $e_root->{$js};
 	return undef unless ref($a);
 	for my $r (@$a) {
+		next unless ref($r);
 		for my $k (keys %$r) {
 			return 1 if $class->_is_anyone_sealed($r, $k);
 		}
@@ -55,9 +81,12 @@ sub check_text {
 package HTML::Tested::JavaScript::Test;
 use HTML::Tested::Test qw(Register_Widget_Tester);
 use HTML::Tested::JavaScript::Serializer;
+use HTML::Tested::JavaScript::Serializer::Array;
 use HTML::Tested::JavaScript::RichEdit;
 use HTML::Tested::JavaScript::Test::RichEdit;
 
+Register_Widget_Tester("HTML::Tested::JavaScript::Serializer::Array"
+		, 'HTML::Tested::JavaScript::Test::Serializer::Array');
 Register_Widget_Tester("HTML::Tested::JavaScript::Serializer"
 		, 'HTML::Tested::JavaScript::Test::Serializer');
 Register_Widget_Tester("HTML::Tested::JavaScript::RichEdit"

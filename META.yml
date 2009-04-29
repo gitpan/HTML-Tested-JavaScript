@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                HTML-Tested-JavaScript
-version:             0.15
+version:             0.16
 abstract:            HTML::Tested JavaScript helpers
 license:             ~
 author:              
@@ -10,7 +10,7 @@ distribution_type:   module
 requires:     
     File::Slurp:                   
     Gtk2::WebKit::Mechanize:       
-    HTML::Tested:                  0.48
+    HTML::Tested:                  0.51
     HTTP::Daemon:                  
     HTTP::Request::Params:         
     Mozilla::Mechanize::GUITester: 0.17

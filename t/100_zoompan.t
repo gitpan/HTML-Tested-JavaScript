@@ -3,15 +3,21 @@ use warnings FATAL => 'all';
 
 use Test::More tests => 22;
 use Mozilla::Mechanize::GUITester;
+use File::Temp qw(tempdir);
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
 use File::Path qw(rmtree);
 use File::Slurp;
+use File::Copy;
 
 my $mech = Mozilla::Mechanize::GUITester->new(quiet => 1, visible => 0);
 my $dir = abs_path(dirname($0));
-symlink("$dir/../javascript/color_picker.js", "$dir/color_picker.js");
-ok($mech->get("file://$dir/tiger.xhtml"));
+
+my $td = tempdir('/tmp/ht_zp_ser_XXXXXX', CLEANUP => 1);
+copy("$dir/tiger.xhtml", "$td/tiger.xhtml") or die;
+symlink(abs_path(dirname($0) . "/../javascript"), "$td/javascript");
+
+ok($mech->get("file://$td/tiger.xhtml"));
 is_deeply($mech->console_messages, []) or exit 1;
 is($mech->run_js(<<ENDS), '0 0 800 800');
 return document.getElementsByTagName("svg")[0].getAttribute("viewBox");
@@ -65,14 +71,14 @@ ENDS
 	exit 1;
 };
 
-my $td = '/tmp/100_zoompan_dir';
+$td = '/tmp/100_zoompan_dir';
 rmtree($td);
 mkdir $td;
 my $tf = read_file('t/tiger.xhtml');
 $tf =~ s/translate/scale(0.5 0.5) translate/;
 $tf =~ s/ 5\);/ 10);/;
 write_file("$td/t.xhtml", $tf);
-symlink("$dir/../javascript/color_picker.js", "$td/color_picker.js");
+symlink(abs_path(dirname($0) . "/../javascript"), "$td/javascript");
 ok($mech->get("file://$td/t.xhtml"));
 is($mech->run_js(<<ENDS), 'scale(0.5, 0.5) translate(200, 200)');
 return document.getElementsByTagName("g")[0].getAttribute("transform");

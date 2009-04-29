@@ -3,10 +3,21 @@ function _ht_flatten(pairs, data, prefix) {
 		var v = data[n];
 		if (!v && v != 0)
 			v = "";
-		if (v instanceof Array)
+		if (v instanceof Array) {
+			if (v.length == 0) {
+				pairs.push([ prefix + n, "" ]);
+				continue;
+			}
+
+			if (!(v[0] instanceof Object)) {
+				pairs.push([ prefix + n, v.join(",") ]);
+				continue;
+			}
+
 			for (var i = 0; i < v.length; i++)
 				_ht_flatten(pairs, v[i],
 					prefix + n + "__" + (i + 1) + "__");
+		}
 		else 
 			pairs.push([ prefix + n, v ]);
 	}
@@ -81,10 +92,18 @@ function ht_serializer_extract(n, str) {
 			.replace(/;\/\/\]\]>\n<\/script>[\s\S]*$/m, "");
 }
 
+function _ht_ser_eq(a, b) {
+	if (a instanceof Array)
+		a = a.join("");
+	if (b instanceof Array)
+		b = b.join("");
+	return a == b;
+}
+
 function ht_serializer_diff_hash(old_o, new_o, res) {
 	var cnt = 0;
 	for (var k in new_o) {
-		if (k in old_o && old_o[k] == new_o[k])
+		if (k in old_o && _ht_ser_eq(old_o[k], new_o[k]))
 			continue;
 		res[k] = new_o[k];
 		cnt++;

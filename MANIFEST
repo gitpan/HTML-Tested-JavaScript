@@ -9,12 +9,14 @@ javascript/rich_edit.js
 javascript/serializer.js
 t/tiger.xhtml
 t/110_webkit.t
+t/120_ser_arr.t
 lib/HTML/Tested/JavaScript/Test/RichEdit.pm
 lib/HTML/Tested/JavaScript/Test.pm
 lib/HTML/Tested/JavaScript/ColorPicker.pm
 lib/HTML/Tested/JavaScript/Variable.pm
 lib/HTML/Tested/JavaScript/AutoSelect.pm
 lib/HTML/Tested/JavaScript/Serializer/Value.pm
+lib/HTML/Tested/JavaScript/Serializer/Array.pm
 lib/HTML/Tested/JavaScript/Serializer/List.pm
 lib/HTML/Tested/JavaScript/Serializer/Form.pm
 lib/HTML/Tested/JavaScript/Serializer.pm

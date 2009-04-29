@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 34;
+use Test::More tests => 38;
 use File::Temp qw(tempdir);
 use Mozilla::Mechanize::GUITester;
 use File::Slurp;
@@ -68,6 +68,16 @@ is($mech->run_js('return ht_serializer_diff_array([ "a", "b" ], a1, a2, ra, d)')
 is_deeply($mech->console_messages, []) or exit 1;
 is($mech->run_js('return d.length'), 1);
 is($mech->run_js('return ht_serializer_encode(d[0])'), 'a=3&b=3');
+
+is($mech->run_js('return ht_serializer_encode({ d: d })')
+	, 'd__1__a=3&d__1__b=3') or exit 1;
+
+is($mech->run_js('return ht_serializer_encode({ k: [], d: d })')
+	, 'k=&d__1__a=3&d__1__b=3');
+is_deeply($mech->console_messages, []) or exit 1;
+
+is($mech->run_js('return ht_serializer_encode({ k: [ 1, 2 ], d: d })')
+	, 'k=1%2C2&d__1__a=3&d__1__b=3');
 
 is($mech->run_js('return ra.length'), 3);
 is($mech->run_js('return ht_serializer_encode({ ra: ra })')

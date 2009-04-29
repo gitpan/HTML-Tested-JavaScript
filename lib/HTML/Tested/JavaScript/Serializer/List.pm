@@ -9,8 +9,9 @@ sub render {
 	my $rows = $caller->$n;
 	my @strs;
 	my $wl = $the_list->containee->Widgets_List;
-	my @names = map { $_->name } grep {
-		$_->isa('HTML::Tested::JavaScript::Serializer::Value') } @$wl;
+	my $vc = 'HTML::Tested::JavaScript::Serializer::Value';
+	my $ac = 'HTML::Tested::JavaScript::Serializer::Array';
+	my @names = map { $_->name } grep { $_->isa($vc) || $_->isa($ac) } @$wl;
 
 	for my $r (@{ $stash->{ $n } }) {
 		push @strs, join(",\n\t", grep { defined($_) }
