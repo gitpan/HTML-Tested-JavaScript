@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 118;
+use Test::More tests => 121;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
@@ -497,6 +497,17 @@ $mech->x_change_select($fn_sel, 6);
 $mech->x_send_keys('treb');
 is($mech->run_js('return htre_get_selection_state("v").fontname;')
 	, 'Trebuchet MS');
+
+my $vframe = $mech->get_html_element_by_id("v");
+HTRE_Set_Value($mech, "v", "ajsjsjsjssjsjsj");
+$mech->x_click($vframe, 20, 20);
+$mech->pull_alerts;
+$mech->x_mouse_down($vframe, 20, 20);
+like($mech->pull_alerts, qr/sch/);
+$mech->x_mouse_move($vframe, 50, 20);
+is($mech->pull_alerts, '');
+$mech->x_mouse_up($vframe, 80, 20);
+like($mech->pull_alerts, qr/sch/);
 
 is($mech->run_js(<<'ENDS'), '<DIV><IMG src="foo"/><FOO bar="goo"/></DIV>')
 htre_tag_whitelist["FOO"] = 1;
