@@ -5,7 +5,6 @@ use Test::More tests => 121;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
-use Mozilla::Mechanize::GUITester;
 use URI::file;
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
@@ -13,6 +12,14 @@ use File::Temp qw(tempdir);
 
 BEGIN { use_ok('HTML::Tested::JavaScript::RichEdit');
 	use_ok('HTML::Tested::JavaScript::Test');
+
+	my $_exit = 1;
+	eval "use Mozilla::Mechanize::GUITester";
+SKIP: {
+	skip "No Mozilla::Mechanize::GUITester installed", 119 if $@;
+	$_exit = undef;
+};
+	exit if $_exit;
 }
 
 use constant HTJRE => HTJ."::RichEdit";

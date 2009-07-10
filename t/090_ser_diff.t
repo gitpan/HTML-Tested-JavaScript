@@ -3,10 +3,11 @@ use warnings FATAL => 'all';
 
 use Test::More tests => 38;
 use File::Temp qw(tempdir);
-use Mozilla::Mechanize::GUITester;
 use File::Slurp;
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
+
+BEGIN { our $_T = 38; do "t/use_guitester.pl"; }
 
 my $td = tempdir('/tmp/ht_ser_XXXXXX', CLEANUP => 1);
 write_file("$td/a.html", <<'ENDS');

@@ -4,7 +4,6 @@ use warnings FATAL => 'all';
 use Test::More tests => 20;
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
-use Gtk2::WebKit::Mechanize;
 use File::Temp qw(tempdir);
 use File::Slurp;
 use HTTP::Request::Params;
@@ -14,6 +13,8 @@ use Data::Dumper;
 use File::Copy;
 
 BEGIN { use_ok("HTML::Tested::JavaScript::Serializer::Array"); };
+BEGIN { our $_T = 19; our $_M = "Gtk2::WebKit::Mechanize";
+		do "t/use_guitester.pl"; }
 
 package T;
 use base 'HTML::Tested';

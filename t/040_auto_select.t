@@ -4,13 +4,20 @@ use warnings FATAL => 'all';
 use Test::More tests => 14;
 use Data::Dumper;
 use HTTP::Daemon;
-use Mozilla::Mechanize::GUITester;
 use File::Temp qw(tempdir);
 use HTML::Tested::Test::Request;
 use File::Slurp;
 
 BEGIN { use_ok('HTML::Tested::JavaScript', qw(HTJ));
 	use_ok("HTML::Tested::JavaScript::AutoSelect");
+
+	my $_exit = 1;
+	eval "use Mozilla::Mechanize::GUITester";
+SKIP: {
+	skip "No Mozilla::Mechanize::GUITester installed", 12 if $@;
+	$_exit = undef;
+};
+	exit if $_exit;
 };
 
 package H;

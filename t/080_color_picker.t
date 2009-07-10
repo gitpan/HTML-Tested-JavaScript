@@ -3,13 +3,14 @@ use warnings FATAL => 'all';
 
 use Test::More tests => 116;
 use File::Temp qw(tempdir);
-use Mozilla::Mechanize::GUITester;
 use File::Slurp;
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
 
 BEGIN { use_ok("HTML::Tested::JavaScript::ColorPicker");
 	use_ok('HTML::Tested::JavaScript', qw(HTJ $Location));
+
+	our $_T = 114; do "t/use_guitester.pl";
 };
 
 $Location = "javascript";

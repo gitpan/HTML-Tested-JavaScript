@@ -3,7 +3,6 @@ use warnings FATAL => 'all';
 
 use Test::More tests => 34;
 use File::Temp qw(tempdir);
-use Mozilla::Mechanize::GUITester;
 use File::Slurp;
 use HTML::Tested::Test;
 use URI::file;
@@ -18,6 +17,14 @@ BEGIN { use_ok('HTML::Tested::JavaScript::Serializer');
 	use_ok('HTML::Tested::JavaScript::Serializer::Value');
 	use_ok('HTML::Tested::JavaScript::Serializer::List');
 	use_ok('HTML::Tested::Value::Hidden');
+
+	my $_exit = 1;
+	eval "use Mozilla::Mechanize::GUITester";
+SKIP: {
+	skip "No Mozilla::Mechanize::GUITester installed", 30 if $@;
+	$_exit = undef;
+};
+	exit if $_exit;
 }
 
 #use Carp;

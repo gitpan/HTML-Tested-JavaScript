@@ -2,13 +2,14 @@ use strict;
 use warnings FATAL => 'all';
 
 use Test::More tests => 22;
-use Mozilla::Mechanize::GUITester;
 use File::Temp qw(tempdir);
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
 use File::Path qw(rmtree);
 use File::Slurp;
 use File::Copy;
+
+BEGIN { our $_T = 22; do "t/use_guitester.pl"; }
 
 my $mech = Mozilla::Mechanize::GUITester->new(quiet => 1, visible => 0);
 my $dir = abs_path(dirname($0));

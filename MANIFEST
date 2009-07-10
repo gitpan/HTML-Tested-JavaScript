@@ -10,6 +10,7 @@ javascript/serializer.js
 t/tiger.xhtml
 t/110_webkit.t
 t/120_ser_arr.t
+t/use_guitester.pl
 lib/HTML/Tested/JavaScript/Test/RichEdit.pm
 lib/HTML/Tested/JavaScript/Test.pm
 lib/HTML/Tested/JavaScript/ColorPicker.pm

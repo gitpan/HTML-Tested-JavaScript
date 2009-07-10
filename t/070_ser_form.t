@@ -3,7 +3,6 @@ use warnings FATAL => 'all';
 
 use Test::More tests => 25;
 use File::Temp qw(tempdir);
-use Mozilla::Mechanize::GUITester;
 use File::Slurp;
 use HTML::Tested::Test;
 use URI::file;
@@ -20,6 +19,8 @@ BEGIN { use_ok('HTML::Tested::JavaScript::Serializer::Form');
 	use_ok('HTML::Tested::JavaScript::Serializer');
 	use_ok('HTML::Tested::JavaScript::Serializer::Value');
 	use_ok('HTML::Tested::JavaScript::Serializer::List');
+
+	our $_T = 21; do "t/use_guitester.pl";
 }
 
 #use Carp;
