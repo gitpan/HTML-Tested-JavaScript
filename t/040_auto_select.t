@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 14;
+use Test::More tests => 16;
 use Data::Dumper;
 use HTTP::Daemon;
 use File::Temp qw(tempdir);
@@ -10,6 +10,7 @@ use File::Slurp;
 
 BEGIN { use_ok('HTML::Tested::JavaScript', qw(HTJ));
 	use_ok("HTML::Tested::JavaScript::AutoSelect");
+	use_ok("HTML::Tested::JavaScript::Variable");
 
 	my $_exit = 1;
 	eval "use Mozilla::Mechanize::GUITester";
@@ -23,15 +24,20 @@ SKIP: {
 package H;
 use base 'HTML::Tested';
 __PACKAGE__->ht_add_widget(::HTJ . "::AutoSelect", "sel");
+__PACKAGE__->ht_add_widget(::HTJ . "::Variable", "v");
 
 package main;
 
 my $obj = H->new({ sel => [ [ 1, "One" ], [ 2, "Two", 1 ], [ 3, "Three" ] ] });
 my $stash = {};
+$obj->v('0121223123123999');
 $obj->ht_render($stash);
 
 my $res = $stash->{sel};
 isnt($res, undef);
+is($stash->{v}, '<script>
+var v = "0121223123123999";
+</script>');
 
 my $exp = <<ENDS;
 <select id="sel" name="sel">
@@ -71,6 +77,7 @@ sleep 1;
 
 write_file("$td/a.html", <<ENDS);
 <html>
+$stash->{v}
 <body>
 $res
 </body>

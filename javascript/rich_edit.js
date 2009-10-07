@@ -53,8 +53,8 @@ function htre_exec_command(id, cmd, arg) {
 }
 
 function _htre_exec_cmd_with_tag(d, arg) {
-	var [ eid, cmd ] = _htre_parse_id(d);
-	htre_exec_command(eid, cmd, arg);
+	var pres = _htre_parse_id(d);
+	htre_exec_command(pres[0], pres[1], arg);
 }
 
 function _htre_but_command(e) { _htre_exec_cmd_with_tag(e.currentTarget); }
@@ -88,7 +88,8 @@ function htre_init(id) {
 		return;
 
 	htre_document(id).designMode = "on";
-	for each (var mod in _htre_modifiers) {
+	for (var i = 0; i < _htre_modifiers.length; i++) {
+		var mod = _htre_modifiers[i];
 		var bo = document.getElementById(id + "_" + mod[0]);
 		if (!bo)
 			continue;
@@ -125,25 +126,41 @@ function htre_add_onchange_listener(id, func) {
 var htre_tag_whitelist = { SPAN: 1, BR: 1, P: 1, "#text": 1, HTRE: 1
 	, FONT: 1, DIV: 1, OL: 1, LI: 1, UL: 1, A: 1, IMG: 1 };
 var htre_attr_whitelist = { style: 1, size: 1, href: 1, src: 1 };
-function _htre_escape_filter(doc) {
-	for each (var d in doc.childNodes) {
+function _htre_escape_filter(doc, no_recurse) {
+	var tags = [];
+	var again = false;
+	while (doc.childNodes.length) {
+		var d = doc.removeChild(doc.childNodes[0]);
 		if (!d || !d.nodeName)
 			continue;
 
-		if (!htre_tag_whitelist[d.nodeName]) {
-			d.parentNode.removeChild(d);
+		if (htre_tag_whitelist[d.nodeName]) {
+			tags.push(d);
 			continue;
 		}
 
-		for each (var a in d.attributes) {
+		for (var i = 0; i < d.childNodes.length; i++)
+			tags.push(d.childNodes[i]);
+
+		again = true;
+	}
+
+	for (var i = 0; i < tags.length; i++) {
+		var d = tags[i];
+		for (var j = 0; j < (d.attributes || []).length; j++) {
+			var a = d.attributes[j];
 			if (!a || !a.nodeName)
 				continue;
 			if (!htre_attr_whitelist[a.nodeName])
 				d.removeAttribute(a.name);
 		}
 
-		_htre_escape_filter(d);
+		if (!no_recurse)
+			_htre_escape_filter(d);
+		doc.appendChild(d);
 	}
+	if (again)
+		_htre_escape_filter(doc, true);
 }
 
 function htre_escape(str) {

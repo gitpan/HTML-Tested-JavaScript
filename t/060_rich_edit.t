@@ -232,16 +232,14 @@ HTRE_Set_Value($mech, "v", '<span style="font-weight: bold;">'
 	. '<script>var _a;</script>hoho hoho<br></span>');
 $mech->pull_alerts;
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<SPAN style="font-weight: bold;">hoho hoho<BR/></SPAN>') or do {
-		diag($mech->pull_alerts);
-		exit 1;
-};
+	, '<SPAN style="font-weight: bold;">var _a;hoho hoho<BR/></SPAN>')
+		or do { diag($mech->pull_alerts); exit 1; };
 is_deeply($mech->console_messages, []) or exit 1;
 
 HTRE_Set_Value($mech, "v", '<span style="font-weight: bold;" onclick="boom();">'
 	. '<script>var _a;</script>hoho hoho<br></span>');
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<SPAN style="font-weight: bold;">hoho hoho<BR/></SPAN>');
+	, '<SPAN style="font-weight: bold;">var _a;hoho hoho<BR/></SPAN>');
 is_deeply($mech->console_messages, []);
 
 my $ital = $mech->get_html_element_by_id("v_italic");

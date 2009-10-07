@@ -17,7 +17,9 @@ sub encode_value {
 
 sub variable_value {
 	my ($self, $val) = @_;
-	return ($val eq "" || $val !~ /^-?\d+$/) ? "\"$val\"" : $val;
+	no warnings 'numeric';
+	my $d = $val + 0;
+	return ($val eq $d) ? $d : "\"$val\"";
 }
 
 sub value_to_string {
