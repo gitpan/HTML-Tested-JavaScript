@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 29;
+use Test::More tests => 30;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -113,7 +113,7 @@ $obj->l->[1]->v2("dd\"dd");
 $stash = {};
 $obj->ht_render($stash);
 is_deeply($stash, { l => [ {
-	v => '"v": "<\\/scRipt>\n"',
+	v => '"v": "</scRipt>\n"',
 	v2 => '"v2": "\\\\f"',
 	v3 => 1
 }, {
@@ -121,7 +121,7 @@ is_deeply($stash, { l => [ {
 	v2 => '"v2": "dd\\"dd"',
 	v3 => '2'
 } ], l_js => '"l": [ {
-	"v": "<\\/scRipt>\n",
+	"v": "</scRipt>\n",
 	"v2": "\\\\f"
 }, {
 	"v": 2,
@@ -197,6 +197,8 @@ is(HTML::Tested::JavaScript::Serializer::Extract_Text('ser', $str), '{
 }');
 
 is(HTML::Tested::JavaScript::Serializer::Extract_Text('ser', "sss"), undef);
+is_deeply(HTML::Tested::JavaScript::Serializer::Extract_JSON('ser', $str)
+	, $obj);
 
 is_deeply([ HTML::Tested::Test->check_text(ref($obj), $str, { ser => ""
 	, v0 => 0, v1 => 1, v2 => 2, v3 => 3 }) ], []);

@@ -35,8 +35,8 @@ $obj->ht_render($stash);
 
 my $res = $stash->{sel};
 isnt($res, undef);
-is($stash->{v}, '<script>
-var v = "0121223123123999";
+is($stash->{v}, '<script>//<![CDATA[
+var v = "0121223123123999";//]]>
 </script>');
 
 my $exp = <<ENDS;

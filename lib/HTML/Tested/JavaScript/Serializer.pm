@@ -67,17 +67,22 @@ sub new {
 	return $self;
 }
 
+sub Wrap {
+	my ($n, $v) = @_;
+	$v =~ s#/#\\/#gs; # is needed for </script>
+	return "<script>//<![CDATA[\nvar $n = $v;//]]>\n</script>";
+}
+
 sub render {
 	my ($self, $caller, $stash, $id) = @_;
 	my $n = $self->name;
 	my $res = $caller->ht_get_widget_option($n, "no_script") ? ""
 			: HTML::Tested::JavaScript::Script_Include();
-	$res .= "<script>//<![CDATA[\nvar $n = {\n\t"
-		. join(",\n\t", grep { $_ } map {
+	$res .= Wrap($n, "{\n\t" . join(",\n\t", grep { $_ } map {
 				my $r = $stash->{$_};
 				ref($r) ? $stash->{$_ . "_js"} : $r
 			} @{ $self->{_jses} })
-		. "\n};//]]>\n</script>";
+		. "\n}");
 	$stash->{ $n } = $res;
 }
 
@@ -85,9 +90,15 @@ sub validate { return (); }
 
 sub Extract_Text {
 	my ($n, $str) = @_;
-	my ($res) = ($str =~ m#<script>//<!\[CDATA\[\nvar $n = ({.*)#s);
+	my ($res) = ($str =~ m#<script>//<!\[CDATA\[\nvar $n = (.*)#s);
 	($res =~ s#;//\]\]>\n</script>.*##s) if $res;
 	return $res;
+}
+
+sub Extract_JSON {
+	my ($n, $str) = @_;
+	my $et = Extract_Text($n, $str) // return;
+	return JSON::XS->new->allow_nonref->decode($et);
 }
 
 1;

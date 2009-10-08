@@ -8,7 +8,7 @@ use HTML::Tested::JavaScript::Variable;
 sub form_response {
 	my ($self, $name, @args) = @_;
 	my $htjv = 'HTML::Tested::JavaScript::Variable';
-	my $al = join(", ", map { '"' . $htjv->encode_value($_) . '"' } @args);
+	my $al = join(", ", map { $htjv->encode_value($_) } @args);
 	return <<ENDS
 <html>
 <head>

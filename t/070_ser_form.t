@@ -135,11 +135,11 @@ is($mech->run_js('return document.getElementById("sform")["l__2__t1v"].value;')
 is_deeply($mech->console_messages, []) or diag($mech->content);
 
 $mech->submit_form;
+is_deeply($mech->console_messages, []) or diag($mech->content);
 my $alerts = $mech->pull_alerts;
 like($alerts, qr/'l' =/);
 like($alerts, qr/rrrr/);
 like($alerts, qr/gggg/);
-is_deeply($mech->console_messages, []);
 
 is(HTML::Tested::JavaScript::Serializer::Form->form_response("aa", "bb", "cc")
 		, <<ENDS);
