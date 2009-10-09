@@ -26,6 +26,15 @@ sub convert_to_param {
 			, join(",", @$val));
 }
 
+package HTML::Tested::JavaScript::Test::Serializer::Value;
+use base 'HTML::Tested::Test::Value';
+
+sub check_text {
+	my ($class, $e_root, $name, $e_stash, $text) = @_;
+	$e_stash->{$name} =~ s#/#\\/#g if $e_stash->{$name};
+	return $class->SUPER::check_text($e_root, $name, $e_stash, $text);
+}
+
 package HTML::Tested::JavaScript::Test::Serializer;
 use base 'HTML::Tested::Test::Value';
 use Text::Diff;
@@ -81,12 +90,15 @@ sub check_text {
 package HTML::Tested::JavaScript::Test;
 use HTML::Tested::Test qw(Register_Widget_Tester);
 use HTML::Tested::JavaScript::Serializer;
+use HTML::Tested::JavaScript::Serializer::Value;
 use HTML::Tested::JavaScript::Serializer::Array;
 use HTML::Tested::JavaScript::RichEdit;
 use HTML::Tested::JavaScript::Test::RichEdit;
 
 Register_Widget_Tester("HTML::Tested::JavaScript::Serializer::Array"
 		, 'HTML::Tested::JavaScript::Test::Serializer::Array');
+Register_Widget_Tester("HTML::Tested::JavaScript::Serializer::Value"
+		, 'HTML::Tested::JavaScript::Test::Serializer::Value');
 Register_Widget_Tester("HTML::Tested::JavaScript::Serializer"
 		, 'HTML::Tested::JavaScript::Test::Serializer');
 Register_Widget_Tester("HTML::Tested::JavaScript::RichEdit"

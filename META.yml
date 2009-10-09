@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                HTML-Tested-JavaScript
-version:             0.20
+version:             0.21
 abstract:            HTML::Tested JavaScript helpers
 license:             ~
 author:              

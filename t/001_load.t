@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 30;
+use Test::More tests => 33;
 use Data::Dumper;
 use HTML::Tested::Test;
 use HTML::Tested::JavaScript::Test;
@@ -131,6 +131,7 @@ is_deeply($stash, { l => [ {
 package T3;
 use base 'HTML::Tested';
 __PACKAGE__->ht_add_widget(::HTJS . "::Value", "v$_") for (0 .. 3);
+__PACKAGE__->ht_add_widget(::HTJS . "::Value", "su", skip_undef => 1);
 __PACKAGE__->ht_add_widget(::HTJS, "ser", map { "v$_" } (0 .. 3));
 
 package main;
@@ -211,6 +212,17 @@ like($cherr[0], qr/\+.*v1/);
 @cherr = HTML::Tested::Test->check_text(ref($obj), "ssss", { ser => "" });
 is(@cherr, 1);
 like($cherr[0], qr/Unable to extract text/);
+
+$obj->v0("<A>G</A>");
+$obj->ht_render($stash);
+like($stash->{ser}, qr/\\\/A/) or exit 1;
+is_deeply([ HTML::Tested::Test->check_text(ref($obj), $stash->{ser}, { ser => ""
+	, v0 => "<A>G</A>", v1 => 1, v2 => 2, v3 => 3 }) ], []) or exit 1;
+
+$obj->su(undef);
+$obj->ht_render($stash);
+is_deeply([ HTML::Tested::Test->check_text(ref($obj), $stash->{ser}, {
+	su => undef, v1 => 1, v2 => 2, v3 => 3 }) ], []) or exit 1;
 
 package LV;
 use base ::HTJS . "::Value";

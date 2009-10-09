@@ -1,11 +1,12 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 17;
+use Test::More tests => 19;
 use JSON::XS;
 
 BEGIN { use_ok('HTML::Tested::JavaScript', qw(HTJ));
 	use_ok("HTML::Tested::JavaScript::Variable");
+	use_ok("HTML::Tested::Test");
 };
 
 package H;
@@ -64,3 +65,8 @@ is(HTML::Tested::JavaScript::Serializer::Extract_JSON("j", $stash->{v}), undef);
 $obj->v(0);
 $obj->ht_render($stash);
 is(HTML::Tested::JavaScript::Serializer::Extract_JSON("v", $stash->{v}), 0);
+
+$obj->v("<A>G</A>");
+$obj->ht_render($stash);
+is_deeply([ HTML::Tested::Test->check_text(ref($obj), $stash->{v}, {
+	v => "<A>G</A>" }) ], []) or exit 1;
