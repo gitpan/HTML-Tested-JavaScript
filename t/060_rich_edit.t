@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 121;
+use Test::More tests => 125;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
@@ -502,6 +502,19 @@ $mech->x_change_select($fn_sel, 6);
 $mech->x_send_keys('treb');
 is($mech->run_js('return htre_get_selection_state("v").fontname;')
 	, 'Trebuchet MS');
+
+$mech->x_click($mech->get_html_element_by_id("v"), 10, 10);
+$mech->x_send_keys("^(a)");
+is($mech->run_js('return htre_get_selection_state("v").link;')
+	, "file://$td/a.com");
+is_deeply($mech->console_messages, []) or exit 1;
+
+# more than one child doesn't need special treatment
+HTRE_Set_Value($mech, "v", HTRE_Get_Value($mech, "v") . " hi");
+$mech->x_click($mech->get_html_element_by_id("v"), 10, 10);
+$mech->x_send_keys("^(a)");
+is($mech->run_js('return htre_get_selection_state("v").link;'), "undefined");
+is_deeply($mech->console_messages, []) or exit 1;
 
 my $vframe = $mech->get_html_element_by_id("v");
 HTRE_Set_Value($mech, "v", "ajsjsjsjssjsjsj");

@@ -23,7 +23,11 @@ function htre_get_selection_state(id) {
 		return;
 
 	var res = { selection: sel };
-	for (var an = sel.anchorNode; an; an = an.parentNode) {
+	var an = sel.anchorNode;
+	if (an.tagName == "BODY" && an.childNodes.length == 1)
+		an = an.childNodes[0];
+
+	for (; an; an = an.parentNode) {
 		if (!an.tagName)
 			continue;
 
@@ -123,7 +127,7 @@ function htre_add_onchange_listener(id, func) {
 	htre_document(id).addEventListener("blur", func, false);
 }
 
-var htre_tag_whitelist = { SPAN: 1, BR: 1, P: 1, "#text": 1, HTRE: 1
+var htre_tag_whitelist = { SPAN: 1, BR: 1, P: 1, HTRE: 1
 	, FONT: 1, DIV: 1, OL: 1, LI: 1, UL: 1, A: 1, IMG: 1 };
 var htre_attr_whitelist = { style: 1, size: 1, href: 1, src: 1 };
 function _htre_escape_filter(doc, no_recurse) {
@@ -134,7 +138,8 @@ function _htre_escape_filter(doc, no_recurse) {
 		if (!d || !d.nodeName)
 			continue;
 
-		if (htre_tag_whitelist[d.nodeName]) {
+		if (htre_tag_whitelist[d.nodeName.toUpperCase()]
+				|| d.nodeName == "#text") {
 			tags.push(d);
 			continue;
 		}

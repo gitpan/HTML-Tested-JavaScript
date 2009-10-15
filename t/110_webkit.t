@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 24;
+use Test::More tests => 26;
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
 use File::Temp qw(tempdir);
@@ -90,6 +90,9 @@ is_deeply($mech->console_messages, []) or exit 1;
 
 is($mech->run_js('return htre_escape("<OL>a</OL><F><K>b</K></F><A>c</A>")')
 	, "<OL>a</OL>b<A>c</A>");
+is_deeply($mech->console_messages, []) or exit 1;
+
+is($mech->run_js('return htre_escape("<ol>a</ol>")'), "<ol>a</ol>");
 is_deeply($mech->console_messages, []) or exit 1;
 
 is($mech->run_js('return ht_serializer_diff_hash(o1, o2, {})'), 0);
