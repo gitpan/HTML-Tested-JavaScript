@@ -84,15 +84,15 @@ $mech->get("file://$td/a.html");
 is($mech->title, 'Diff Array');
 is_deeply($mech->console_messages, []) or exit 1;
 
-is($mech->run_js('return htre_escape("<OL>a</OL><F>b</F><A>c</A>")')
-	, "<OL>a</OL>b<A>c</A>");
+like($mech->run_js('return htre_escape("<OL>a</OL><F>b</F><A>c</A>")')
+	, qr#<OL>a</OL>b<A>c</A>#);
 is_deeply($mech->console_messages, []) or exit 1;
 
 is($mech->run_js('return htre_escape("<OL>a</OL><F><K>b</K></F><A>c</A>")')
 	, "<OL>a</OL>b<A>c</A>");
 is_deeply($mech->console_messages, []) or exit 1;
 
-is($mech->run_js('return htre_escape("<ol>a</ol>")'), "<ol>a</ol>");
+like($mech->run_js('return htre_escape("<ol>a</ol>")'), qr#<ol>a</ol>#);
 is_deeply($mech->console_messages, []) or exit 1;
 
 is($mech->run_js('return ht_serializer_diff_hash(o1, o2, {})'), 0);

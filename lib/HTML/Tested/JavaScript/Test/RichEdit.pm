@@ -1,7 +1,7 @@
 package HTML::Tested::JavaScript::Test::RichEdit;
 use base 'HTML::Tested::Test::Value', 'Exporter';
 
-our @EXPORT_OK = qw(HTRE_Get_Value HTRE_Set_Value HTRE_Get_Body);
+our @EXPORT_OK = qw(HTRE_Get_Value HTRE_Set_Value HTRE_Get_Body HTRE_Clean);
 
 sub handle_sealed {
 	my ($class, $e_root, $name, $e_val, $r_val, $err) = @_;
@@ -19,11 +19,19 @@ sub HTRE_Get_Body {
 	my ($mech, $name) = @_;
 	return $mech->get_html_element_by_id($name, "IFrame")
 			->GetContentDocument()
-			->GetElementsByTagName("BODY")->Item(0)
+			->GetElementsByTagName("body")->Item(0)
 			->QueryInterface(Mozilla::DOM::NSHTMLElement->GetIID);
 }
 
-sub HTRE_Get_Value { HTRE_Get_Body(@_)->GetInnerHTML; }
+sub HTRE_Clean { 
+	my $v = shift;
+	$v =~ s# xmlns="[^"]+"##g;
+	$v =~ s# _moz[^ />]+##g;
+	$v =~ s# type="_moz"##g;
+	return $v;
+}
+
+sub HTRE_Get_Value { HTRE_Clean(HTRE_Get_Body(@_)->GetInnerHTML); }
 
 sub HTRE_Set_Value {
 	my ($mech, $name, $val) = @_;

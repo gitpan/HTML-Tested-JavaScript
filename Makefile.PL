@@ -6,7 +6,7 @@ WriteMakefile(
 	AUTHOR       => 'Boris Sukholitko (boriss@gmail.com)',
 	ABSTRACT     => 'HTML::Tested JavaScript helpers',
 	PREREQ_PM    => { 'Test::Simple' => 0.44,
-	    		'HTML::Tested' => 0.54,
+	    		'HTML::Tested' => 0.56,
 	    		'Mozilla::Mechanize::GUITester' => 0.18,
 			'JSON::XS' => '',
 			'File::Slurp' => '',

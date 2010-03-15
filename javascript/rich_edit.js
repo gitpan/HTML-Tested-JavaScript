@@ -24,14 +24,14 @@ function htre_get_selection_state(id) {
 
 	var res = { selection: sel };
 	var an = sel.anchorNode;
-	if (an.tagName == "BODY" && an.childNodes.length == 1)
+	if (an.tagName && an.tagName.toUpperCase() == "BODY" && an.childNodes.length == 1)
 		an = an.childNodes[0];
 
 	for (; an; an = an.parentNode) {
 		if (!an.tagName)
 			continue;
 
-		var st = _htre_state_tags[an.tagName];
+		var st = _htre_state_tags[an.tagName.toUpperCase()];
 		if (st && !(st[0] in res))
 			res[ st[0] ] = st[1](an);
 
@@ -54,6 +54,17 @@ function htre_focus(id) {
 function htre_exec_command(id, cmd, arg) {
 	htre_document(id).execCommand(cmd, false, arg);
 	htre_focus(id);
+}
+
+function htre_insert_image(id, src) {
+	var bad_img = "file:///_htre_foo";
+	htre_exec_command(id, "insertimage", bad_img);
+	var ims = htre_document(id).getElementsByTagName("img");
+	for (var i = 0; i < ims.length; i++)
+		if (ims[i].src == bad_img) {
+			ims[i].src = src;
+			return ims[i];
+		}
 }
 
 function _htre_exec_cmd_with_tag(d, arg) {
@@ -111,7 +122,7 @@ function htre_get_inner_xml(node) {
 	var xml = (new XMLSerializer()).serializeToString(node);
 	var b = new RegExp("^<" + node.nodeName + "[^>]*>");
 	var e = new RegExp("</" + node.nodeName + ">$");
-	return xml.replace(b, "").replace(e, "").replace(/ _moz_dirty=""/g, "");
+	return xml.replace(b, "").replace(e, "").replace(/ _moz_\w+="\w*"/g, "");
 }
 
 function htre_get_value(id) {

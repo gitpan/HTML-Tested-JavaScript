@@ -40,7 +40,7 @@ is($mech->run_js(<<ENDS), '0 0 800 800');
 return document.getElementsByTagName("svg")[0].getAttribute("viewBox");
 ENDS
 
-is($mech->run_js(<<ENDS), 'translate(200, 200) scale(0.836251, 0.836251)');
+is($mech->run_js(<<ENDS), 'translate(200, 200) scale(0.836251)');
 return document.getElementsByTagName("g")[0].getAttribute("transform");
 ENDS
 
@@ -56,7 +56,7 @@ is($mech->run_js(<<ENDS), '0 0 800 800');
 return document.getElementsByTagName("svg")[0].getAttribute("viewBox");
 ENDS
 
-is($mech->run_js(<<ENDS), 'translate(200, 200) scale(1.19581, 1.19581)');
+is($mech->run_js(<<ENDS), 'translate(200, 200) scale(1.19581)');
 return document.getElementsByTagName("g")[0].getAttribute("transform");
 ENDS
 
@@ -81,7 +81,7 @@ $tf =~ s/ 5\);/ 10);/;
 write_file("$td/t.xhtml", $tf);
 symlink(abs_path(dirname($0) . "/../javascript"), "$td/javascript");
 ok($mech->get("file://$td/t.xhtml"));
-is($mech->run_js(<<ENDS), 'scale(0.5, 0.5) translate(200, 200)');
+is($mech->run_js(<<ENDS), 'scale(0.5) translate(200, 200)');
 return document.getElementsByTagName("g")[0].getAttribute("transform");
 ENDS
 
@@ -101,5 +101,5 @@ ENDS
 is($mech->run_js(<<ENDS)
 return document.getElementsByTagName("g")[0].getAttribute("transform");
 ENDS
-	, 'scale(0.5, 0.5) translate(200, 200) scale(0.774264, 0.774264)');
+	, 'scale(0.5) translate(200, 200) scale(0.774264)');
 

@@ -42,7 +42,7 @@ var v = "0121223123123999";//]]>
 my $exp = <<ENDS;
 <select id="sel" name="sel">
 <option value="1">One</option>
-<option value="2" selected>Two</option>
+<option value="2" selected="selected">Two</option>
 <option value="3">Three</option>
 </select>
 ENDS

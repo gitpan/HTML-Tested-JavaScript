@@ -20,10 +20,12 @@ sub new {
 	return $self;
 }
 
+my $_src_data = 'data:application/xhtml+xml,' . __PACKAGE__->encode_value(
+		'<html xmlns="http://www.w3.org/1999/xhtml"><body></body></html>');
 sub render {
 	my ($self, $caller, $stash, $id) = @_;
 	my $n = $self->name;
-	$stash->{$n} = "<iframe id=\"$n\"></iframe>";
+	$stash->{$n} = "<iframe id=\"$n\" src='$_src_data'></iframe>";
 	my $scr = '<script src="' . $HTML::Tested::JavaScript::Location
 		. '/rich_edit.js">' . "</script>\n";
 	

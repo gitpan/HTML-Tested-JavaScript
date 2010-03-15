@@ -89,7 +89,7 @@ ENDS
 ENDS
 	$parent->ht_add_widget(HTV, "$name\_rgb_hex", is_trusted => 1
 			, default_value => <<ENDS);
-<input size="5" id="$name\_rgb_hex" type="text">
+<input size="5" id="$name\_rgb_hex" type="text" />
 ENDS
 	return $self;
 }
