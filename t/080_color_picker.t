@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 116;
+use Test::More tests => 123;
 use File::Temp qw(tempdir);
 use File::Slurp;
 use File::Basename qw(dirname);
@@ -136,17 +136,19 @@ is($rr->GetValue, 255);
 is($rg->GetValue, 255);
 is($rb->GetValue, 255);
 
-is($mech->get_element_style($cur_color, "background-color")
-	, "rgb(255, 255, 255)");
-is($mech->get_element_style($prev_color, "background-color")
-	, "rgb(255, 255, 255)");
+is($mech->get_element_style($cur_color, "background-color"), "rgb(255, 255, 255)");
+is($mech->get_element_style($prev_color, "background-color"), "rgb(255, 255, 255)");
 
 my $mg1 = $mech->gesture($point);
 $mech->x_mouse_down($point, 2, 2);
 $mech->x_mouse_up($point, 22, 22);
+is_deeply($mech->console_messages, []) or exit 1;
 
 my $mg2 = $mech->gesture($point);
-is($mg2->element_left - $mg1->element_left, 21); # there is a half there
+is($mg2->element_left - $mg1->element_left, 21) or do {
+	diag($mech->pull_alerts);
+	exit 1;
+};
 is($mg2->element_top - $mg1->element_top, 21);
 is_deeply($mech->console_messages, []) or exit 1;
 
@@ -314,8 +316,7 @@ is($rr->GetValue, 7);
 is($rg->GetValue, 100);
 is($rb->GetValue, 218);
 is($hex->GetValue, '0764da');
-is($mech->get_element_style($cur_color, "background-color")
-	, "rgb(7, 100, 218)");
+is($mech->get_element_style($cur_color, "background-color"), "rgb(7, 100, 218)");
 
 $mech->x_change_text($hex, '07cada');
 is_deeply($mech->console_messages, []) or exit 1;
@@ -323,6 +324,15 @@ is($rr->GetValue, 7);
 is($rg->GetValue, 202);
 is($rb->GetValue, 218);
 is($hex->GetValue, '07cada');
-is($mech->get_element_style($prev_color, "background-color")
-	, "rgb(7, 202, 218)");
+is($mech->get_element_style($prev_color, "background-color"), "rgb(7, 202, 218)");
 
+$mech->pull_alerts;
+$mech->x_click($cp_div, 50, 50);
+is_deeply($mech->console_messages, []) or exit 1;
+is($mech->get_element_style($cur_color, "background-color"), "rgb(185, 247, 255)");
+is($mech->get_element_style($prev_color, "background-color"), "rgb(185, 247, 255)");
+
+$mech->x_click($hue, 5, 150);
+is_deeply($mech->console_messages, []) or exit 1;
+is($mech->get_element_style($cur_color, "background-color"), "rgb(255, 185, 185)");
+is($mech->get_element_style($prev_color, "background-color"), "rgb(255, 185, 185)");

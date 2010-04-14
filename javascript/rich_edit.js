@@ -97,6 +97,11 @@ var _htre_modifiers = [ [ "bold", "click", _htre_but_command ]
 	, [ "fontname", "change", _htre_sel_command ]
 	, [ "fontsize", "change", _htre_sel_command ] ];
 
+function _htre_on_paste(id) {
+	var ix = htre_get_value(id);
+	htre_set_value(id, htre_escape(ix));
+}
+
 function htre_init(id) {
 	/* Do it only once - no way to test it ... */
 	if (htre_document(id).designMode == "on")
@@ -112,6 +117,9 @@ function htre_init(id) {
 		/* For some reason, closure doesn't work here ... */
 		bo.addEventListener(mod[1], mod[2], false);
 	}
+	htre_document(id).body.addEventListener("paste", function(e) {
+		setTimeout(function() { _htre_on_paste(id); }, 0);
+	}, false);
 }
 
 function htre_register_on_load(id) {
@@ -182,6 +190,8 @@ function _htre_escape_filter(doc, no_recurse) {
 function htre_escape(str) {
 	str = "<HTRE>" + str + "</HTRE>"; 
 	var doc = (new DOMParser()).parseFromString(str, "application/xml");
+	if (doc.childNodes[0].nodeName != "HTRE")
+		return str.replace(/<\/?[^>]+>/g, "");
 	_htre_escape_filter(doc);
 	return htre_get_inner_xml(doc.getElementsByTagName("HTRE")[0]);
 }

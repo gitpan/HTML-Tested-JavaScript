@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 125;
+use Test::More tests => 131;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
@@ -95,6 +95,15 @@ ENDS
 is_deeply([ HTML::Tested::Test->check_text('T', $str, { v => '' }) ], []);
 
 my $td = tempdir('/tmp/060_re_XXXXXX', CLEANUP => 1);
+my $pf = "$td/paste.html";
+write_file($pf, <<'ENDS');
+<html>
+<body>
+<H1>Hello, World
+</body>
+</html>
+ENDS
+
 my $tf = "$td/re.html";
 write_file($tf, $str);
 symlink(abs_path(dirname($0) . "/../javascript"), "$td/javascript");
@@ -102,6 +111,11 @@ ok(-f "$td/javascript/serializer.js");
 ok(-f "$td/javascript/rich_edit.js");
 
 my $mech = Mozilla::Mechanize::GUITester->new(quiet => 1, visible => 0);
+ok($mech->get(URI::file->new_abs($pf)->as_string));
+
+$mech->x_send_keys("^(a)");
+$mech->x_send_keys("^(c)");
+
 my $url = URI::file->new_abs($tf)->as_string;
 ok($mech->get($url));
 is_deeply($mech->console_messages, []) or diag($mech->content);
@@ -125,11 +139,19 @@ is_deeply($mech->console_messages, []) or exit 1;
 is(HTRE_Get_Value($mech, "v"), "hoho hoho<br/>");
 is(HTRE_Clean(HTRE_Get_Body($mech, "v")->GetInnerHTML), HTRE_Get_Value($mech, "v"));
 
+$mech->x_send_keys("^(v)");
+is_deeply($mech->console_messages, []) or exit 1;
+is($mech->run_js('return htre_get_value("v");'), "hoho hoho\nHello, World\n") or exit 1;
+
 $mech->run_js('htre_set_value("v", "momo<p>mama</p>");');
 is($mech->run_js('return htre_get_value("v");'), "momo<p>mama</p>");
 is(HTRE_Clean($if_ns->GetInnerHTML), "momo<p>mama</p>");
 $mech->pull_alerts;
 is($mech->run_js('return htre_escape(htre_get_value("v"));'), 'momo<p>mama</p>');
+
+is($mech->run_js('return htre_escape("<A>fooo</B><C j=\"dd\">");'), 'fooo');
+ok(shift @{ $mech->console_messages }); # DOMParser error cannot be suppressed
+is_deeply($mech->console_messages, []) or do { diag($mech->pull_alerts); exit 1; };
 
 T->ht_set_widget_option("v", "no_onload", 1);
 $obj->ht_render($stash);

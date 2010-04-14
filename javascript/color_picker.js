@@ -73,11 +73,15 @@ function htcp_move_by_y(el, e, ctx) {
 
 function htcp_listen_for_mouse_events(el, mdown, mmove, mup) {
 	var myup = function(e) {
+		e.stopPropagation();
+		e.preventDefault();
 		document.removeEventListener("mousemove", mmove, true);
 		document.removeEventListener("mouseup", myup, true);
 		mup(e);
 	}
 	var mydown = function(e) {
+		e.stopPropagation();
+		e.preventDefault();
 		document.addEventListener("mousemove", mmove, true);
 		document.addEventListener("mouseup", myup, true);
 		mdown(e);
@@ -215,26 +219,50 @@ function _htcp_add_rgb_hook(name, sfx, hook) {
 	eb.addEventListener("change", hook, true);
 }
 
+function htcp_get_absolute_offsets(el) {
+	var x = 0;
+	var y = 0;
+	/* offsetParent != parentNode. E.g. in list-items offsetParent == 0 */
+	while (el) {
+		x += el.offsetLeft;
+		y += el.offsetTop;
+		el = el.offsetParent;
+	}
+	return [ x, y ];
+}
+
+function _htcp_register_pointer(ptr, name, down, move) {
+	var up = function(e) { _htcp_set_prev_color(name); };
+	htcp_listen_for_mouse_events(ptr, down, move, up);
+	ptr.parentNode.addEventListener("mousedown", function(e) {
+		var poffs = htcp_get_absolute_offsets(ptr);
+		down({ clientX: poffs[0] + _htcp_half_width(ptr)
+			, clientY: poffs[1] + _htcp_half_height(ptr) });
+		move(e);
+		up();
+	}, false);
+}
+
 function _htcp_init(name, hook) {
 	var ptr = document.getElementById(name + "_color_pointer");
 	var pctx = {};
-	htcp_listen_for_mouse_events(ptr, function(e) {
+	_htcp_register_pointer(ptr, name, function(e) {
 		htcp_save_x_dimensions(ptr, e, pctx);
 		htcp_save_y_dimensions(ptr, e, pctx);
 	}, function(e) {
 		htcp_move_by_x(ptr, e, pctx);
 		htcp_move_by_y(ptr, e, pctx);
 		_htcp_set_color_from_indicators(name);
-	}, function(e) { _htcp_set_prev_color(name); });
+	});
 
 	var hup = document.getElementById(name + "_hue_pointer");
 	var hctx = {};
-	htcp_listen_for_mouse_events(hup, function(e) {
+	_htcp_register_pointer(hup, name, function(e) {
 		htcp_save_y_dimensions(hup, e, hctx);
 	}, function(e) {
 		htcp_move_by_y(hup, e, hctx);
 		_htcp_set_color_from_indicators(name);
-	}, function(e) { _htcp_set_prev_color(name); });
+	});
 
 	_htcp_add_rgb_hook(name, "r", _htcp_on_rgb_enter);
 	_htcp_add_rgb_hook(name, "g", _htcp_on_rgb_enter);
