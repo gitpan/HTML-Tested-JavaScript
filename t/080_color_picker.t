@@ -28,11 +28,7 @@ $obj->ht_render($stash);
 isnt($stash->{cp_color}, undef);
 isnt($stash->{cp_hue}, undef);
 
-use File::Path;
-rmtree("/tmp/ht_color");
-mkdir("/tmp/ht_color");
-my $td = "/tmp/ht_color";
-#my $td = tempdir('/tmp/ht_color_p_XXXXXX', CLEANUP => 1);
+my $td = tempdir('/tmp/ht_color_p_XXXXXX', CLEANUP => 1);
 write_file("$td/a.html", <<ENDS);
 <html>
 <head><title>Color Picker</title>

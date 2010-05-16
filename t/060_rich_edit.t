@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 131;
+use Test::More tests => 132;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
@@ -127,16 +127,17 @@ use_ok('HTML::Tested::JavaScript::Test::RichEdit', qw(HTRE_Get_Value
 			HTRE_Set_Value HTRE_Get_Body HTRE_Clean));
 
 my $if_ns = $if->QueryInterface(Mozilla::DOM::NSHTMLElement->GetIID);
-is(HTRE_Clean($if_ns->GetInnerHTML), "<br/>");
+my $br = HTRE_Clean($if_ns->GetInnerHTML);
+like($br, qr/^<br ?\/>$/);
 
 $mech->x_click($if, 10, 10);
 $mech->x_send_keys('hoho hoho');
-is(HTRE_Clean($if_ns->GetInnerHTML), "hoho hoho<br/>");
-is($mech->run_js('return htre_get_value("v");'), "hoho hoho<br/>");
+is(HTRE_Clean($if_ns->GetInnerHTML), "hoho hoho$br");
+is($mech->run_js('return htre_get_value("v");'), "hoho hoho$br");
 is($mech->run_js('return htre_document("v");'), '[object HTMLDocument]');
 is_deeply($mech->console_messages, []) or exit 1;
 
-is(HTRE_Get_Value($mech, "v"), "hoho hoho<br/>");
+is(HTRE_Get_Value($mech, "v"), "hoho hoho$br");
 is(HTRE_Clean(HTRE_Get_Body($mech, "v")->GetInnerHTML), HTRE_Get_Value($mech, "v"));
 
 $mech->x_send_keys("^(v)");
@@ -188,14 +189,14 @@ ok($mech->get($url_none));
 is_deeply($mech->console_messages, []);
 
 $mech->run_js("init()");
-is(HTRE_Get_Value($mech, "v"), "<br/>");
+is(HTRE_Get_Value($mech, "v"), "$br");
 
 unlike($mech->pull_alerts, qr/Hello/);
 $if = $mech->get_html_element_by_id("v");
 $mech->x_click($if, 10, 10);
 $mech->x_send_keys('hoho hoho');
 $mech->x_click($if, -5, -5);
-is(HTRE_Get_Value($mech, "v"), "hoho hoho<br/>");
+is(HTRE_Get_Value($mech, "v"), "hoho hoho$br");
 like($mech->pull_alerts, qr/Hello hoho hoho/);
 is_deeply($mech->console_messages, []);
 
@@ -237,7 +238,7 @@ my $vif = $mech->get_html_element_by_id("v");
 isnt($vif, undef) or exit 1;
 $mech->x_send_keys('hoho hoho');
 is(HTRE_Get_Value($mech, "v"), '<span style="font-weight: bold;">'
-	. 'hoho hoho<br/></span>');
+	. "hoho hoho$br</span>");
 is_deeply($mech->console_messages, []);
 is($mech->run_js('return htre_get_selection_state("v").bold;'), 'bold');
 is_deeply($mech->console_messages, []) or exit 1;
@@ -249,17 +250,17 @@ $mech->x_send_keys('{RIG}');
 is($mech->run_js('return htre_get_selection_state("v").bold;'), 'normal');
 
 HTRE_Set_Value($mech, "v", '<span style="font-weight: bold;">'
-	. '<script>var _a;</script>hoho hoho<br/></span>');
+	. "<script>var _a;</script>hoho hoho$br</span>");
 $mech->pull_alerts;
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<span style="font-weight: bold;">var _a;hoho hoho<br/></span>')
+	, '<span style="font-weight: bold;">var _a;hoho hoho' . "<br/></span>")
 		or do { diag($mech->pull_alerts); exit 1; };
 is_deeply($mech->console_messages, []) or exit 1;
 
 HTRE_Set_Value($mech, "v", '<span style="font-weight: bold;" onclick="boom();">'
-	. '<script>var _a;</script>hoho hoho<br/></span>');
+	. "<script>var _a;</script>hoho hoho$br</span>");
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<span style="font-weight: bold;">var _a;hoho hoho<br/></span>');
+	, '<span style="font-weight: bold;">var _a;hoho hoho' . "<br/></span>");
 is_deeply($mech->console_messages, []);
 
 my $ital = $mech->get_html_element_by_id("v_italic");
@@ -270,7 +271,7 @@ $mech->x_click($ital, 2, 2);
 HTRE_Set_Value($mech, "v", "");
 $mech->x_send_keys('haha haha');
 is(HTRE_Get_Value($mech, "v"), '<span style="font-style: italic;">'
-	. '<span style="font-weight: bold;">haha haha<br/></span></span>');
+	. '<span style="font-weight: bold;">haha haha' . "$br</span></span>");
 is_deeply($mech->console_messages, []);
 is($mech->run_js('return htre_get_selection_state("v").italic;'), 'italic');
 
@@ -281,7 +282,7 @@ $mech->x_click($under, 2, 2);
 
 $mech->x_send_keys('haha haha');
 is(HTRE_Get_Value($mech, "v")
-	, '<span style="text-decoration: underline;">haha haha<br/></span>');
+	, '<span style="text-decoration: underline;">haha haha' . "$br</span>");
 is($mech->run_js('return htre_get_selection_state("v").underline;')
 	, 'underline');
 is_deeply($mech->console_messages, []);
@@ -294,13 +295,20 @@ is($mech->run_js('return htre_get_selection_state("v").underline;')
 
 my $ix = $mech->run_js('return htre_get_inner_xml(document.body)');
 is_deeply($mech->console_messages, []);
-is($ix, <<ENDS);
+
+my $body = $br =~ / / ? q{
+<div id="v_bold">Bold</div>
+<div id="v_italic">Italic</div>
+<div id="v_underline">Underline</div>
+<iframe src="data:application/xhtml+xml,%3Chtml%20xmlns=%22http://www.w3.org/1999/xhtml%22%3E%3Cbody%3E%3C/body%3E%3C/html%3E" id="v"></iframe>
+} : <<ENDS;
 
 <DIV id="v_bold">Bold</DIV>
 <DIV id="v_italic">Italic</DIV>
 <DIV id="v_underline">Underline</DIV>
 <IFRAME src="data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;" id="v"/>
 ENDS
+is($ix, $body);
 
 $str = sprintf(<<'ENDS'
 <html> <head>%s
@@ -359,18 +367,18 @@ isnt($vif, undef) or exit 1;
 
 $mech->x_send_keys('fn fn');
 my $gv = '<font size="2"><span style="font-family: '
-		. 'Courier;">fn fn<br/></span></font>';
+		. 'Courier;">fn fn' . "$br</span></font>";
 is(HTRE_Get_Value($mech, "v"), $gv);
 is($mech->run_js('return htre_get_selection_state("v").fontname;'), 'Courier');
 is($mech->run_js('return htre_get_selection_state("v").fontsize;'), 2);
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<font size="2"><span style="font-family: Courier;">fn fn<br/>'
-	. '</span></font>');
+	, '<font size="2"><span style="font-family: Courier;">fn fn'
+	. '<br/></span></font>');
 $mech->run_js('htre_exec_command("v", "forecolor", "#012345");');
 $mech->x_send_keys('bo bo');
 is(HTRE_Get_Value($mech, "v"), '<font size="2"><span style="font-family: '
 		. 'Courier;">fn fn<span style="color: rgb(1, 35, 69);">'
-		. 'bo bo</span><br/></span></font>');
+		. 'bo bo</span>' . "$br</span></font>");
 is($mech->run_js('return htre_get_selection_state("v").forecolor;')
 	, 'rgb(1, 35, 69)');
 
@@ -378,7 +386,7 @@ $mech->x_change_select($fs_sel, 4);
 $mech->x_send_keys('fo fo');
 is(HTRE_Get_Value($mech, "v"), '<font size="2"><span style="font-family: '
 		. 'Courier;">fn fn<span style="color: rgb(1, 35, 69);">'
-		. 'bo bo<font size="4">fo fo</font></span><br/></span></font>');
+		. 'bo bo<font size="4">fo fo</font></span>' . "$br</span></font>");
 is($mech->run_js('return htre_get_selection_state("v").fontsize;'), 4);
 like($mech->run_js('return htre_get_selection_state("v").selection.anchorNode;')
 	, qr/object/);
@@ -390,7 +398,7 @@ $mech->x_send_keys('c');
 $mech->x_change_select($fs_sel, 6);
 $mech->x_send_keys('fh fh');
 is(HTRE_Get_Value($mech, "v"), '<span style="background-color: '
-	. 'rgb(255, 204, 221);">c<font size="6">fh fh<br/></font></span>');
+	. 'rgb(255, 204, 221);">c<font size="6">fh fh' . "$br</font></span>");
 is($mech->run_js('return htre_get_selection_state("v").hilitecolor;')
 	, 'rgb(255, 204, 221)');
 
@@ -398,10 +406,9 @@ HTRE_Set_Value($mech, "v", "");
 my $jc = $mech->get_html_element_by_id("v_justifycenter");
 $mech->x_click($jc, 2, 2);
 $mech->x_send_keys("goo goo");
-is(HTRE_Get_Value($mech, "v"), '<div style="text-align: center;">goo goo<br/>'
-		. '</div>');
+is(HTRE_Get_Value($mech, "v"), '<div style="text-align: center;">goo goo'. "$br</div>");
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<div style="text-align: center;">goo goo<br/></div>');
+	, '<div style="text-align: center;">goo goo' . "<br/></div>");
 is($mech->run_js('return htre_get_selection_state("v").justifycenter;')
 	, 'true');
 
@@ -409,7 +416,7 @@ $mech->run_js('htre_exec_command("v", "hilitecolor", "#ffccdd");');
 $mech->x_send_keys('bc bc');
 is(HTRE_Get_Value($mech, "v"), '<div style="text-align: center;">goo goo'
 	. '<span style="background-color: rgb(255, 204, 221);">'
-	. 'bc bc</span><br/></div>');
+	. 'bc bc</span>' . "$br</div>");
 is($mech->run_js('return htre_get_selection_state("v").hilitecolor;')
 	, 'rgb(255, 204, 221)');
 
@@ -418,7 +425,7 @@ for (qw(left right)) {
 	$mech->x_click($mech->get_html_element_by_id("v_justify$_"), 2, 2);
 	$mech->x_send_keys($_);
 	is(HTRE_Get_Value($mech, "v"), "<div style=\"text-align: $_;\">$_"
-			. "<br/></div>");
+			. "$br</div>");
 	is($mech->run_js('return htre_get_selection_state("v").justify'
 		. "$_;"), 'true');
 }
@@ -428,18 +435,18 @@ is($mech->run_js('return htre_get_selection_state("v").justifycenter;')
 HTRE_Set_Value($mech, "v", "");
 $mech->x_click($mech->get_html_element_by_id("v_insertorderedlist"), 2, 2);
 $mech->x_send_keys("aaa\nbbb");
-is(HTRE_Get_Value($mech, "v"), '<ol><li>aaa</li><li>bbb<br/></li></ol>');
+is(HTRE_Get_Value($mech, "v"), "<ol><li>aaa</li><li>bbb$br</li></ol>");
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<ol><li>aaa</li><li>bbb<br/></li></ol>');
+	, "<ol><li>aaa</li><li>bbb<br/></li></ol>");
 is($mech->run_js('return htre_get_selection_state("v").insertorderedlist;')
 	, 'true');
 
 HTRE_Set_Value($mech, "v", "");
 $mech->x_click($mech->get_html_element_by_id("v_insertunorderedlist"), 2, 2);
 $mech->x_send_keys("aaa\nbbb");
-is(HTRE_Get_Value($mech, "v"), '<ul><li>aaa</li><li>bbb<br/></li></ul>');
+is(HTRE_Get_Value($mech, "v"), "<ul><li>aaa</li><li>bbb$br</li></ul>");
 is($mech->run_js('return htre_escape(htre_get_value("v"));')
-	, '<ul><li>aaa</li><li>bbb<br/></li></ul>');
+	, "<ul><li>aaa</li><li>bbb<br/></li></ul>");
 is($mech->run_js('return htre_get_selection_state("v").insertunorderedlist;')
 	, 'true');
 is($mech->run_js('return htre_get_selection_state("v").insertorderedlist;')
@@ -448,14 +455,14 @@ is($mech->run_js('return htre_get_selection_state("v").insertorderedlist;')
 HTRE_Set_Value($mech, "v", "");
 $mech->x_click($mech->get_html_element_by_id("v_indent"), 2, 2);
 $mech->x_send_keys("aaa");
-is(HTRE_Get_Value($mech, "v"), '<div style="margin-left: 40px;">aaa<br/></div>');
+is(HTRE_Get_Value($mech, "v"), '<div style="margin-left: 40px;">aaa' . "$br</div>");
 
 $mech->x_click($mech->get_html_element_by_id("v_indent"), 2, 2);
 $mech->x_click($mech->get_html_element_by_id("v_indent"), 2, 2);
 $mech->x_click($mech->get_html_element_by_id("v_outdent"), 2, 2);
 $mech->x_send_keys("aaa");
 is(HTRE_Get_Value($mech, "v")
-	, '<div style="margin-left: 80px;">aaaaaa<br/></div>');
+	, '<div style="margin-left: 80px;">aaaaaa' . "$br</div>");
 
 is($mech->run_js('return htre_get_selection("v").getRangeAt(0);'), '');
 is_deeply($mech->console_messages, []);
@@ -467,19 +474,19 @@ is($mech->run_js('return htre_get_inner_xml('
 
 $mech->x_click($mech->get_html_element_by_id("v_undo"), 2, 2);
 is(HTRE_Get_Value($mech, "v")
-	, '<div style="margin-left: 80px;">aaa<br/></div>');
+	, '<div style="margin-left: 80px;">aaa' . "$br</div>");
 
 $mech->x_click($mech->get_html_element_by_id("v_redo"), 2, 2);
 is(HTRE_Get_Value($mech, "v")
-	, '<div style="margin-left: 80px;">aaaaaa<br/></div>');
+	, '<div style="margin-left: 80px;">aaaaaa' . "$br</div>");
 
 $mech->x_send_keys("^(a)");
 $mech->run_js('htre_exec_command("v", "CreateLink", "a.com");');
 is(HTRE_Get_Value($mech, "v"), '<div style="margin-left: 80px;">'
-		. '<a href="a.com">aaaaaa<br/></a></div>');
+		. '<a href="a.com">aaaaaa' . "$br</a></div>");
 is($mech->run_js('return htre_escape(htre_get_value("v"));'),
-		'<div style="margin-left: 80px;"><a href="a.com">aaaaaa<br/>'
-		.  '</a></div>');
+		'<div style="margin-left: 80px;"><a href="a.com">aaaaaa'
+		.  '<br/></a></div>');
 is($mech->run_js('return htre_get_selection("v").getRangeAt(0);'), 'aaaaaa');
 
 $mech->x_click($mech->get_html_element_by_id("foci"), 2, 2);
@@ -536,8 +543,9 @@ is_deeply($mech->console_messages, []) or exit 1;
 
 my $vframe = $mech->get_html_element_by_id("v");
 HTRE_Set_Value($mech, "v", "ajsjsjsjssjsjsj");
-$mech->x_click($vframe, 20, 20);
 $mech->pull_alerts;
+$mech->x_click($vframe, 20, 20);
+like($mech->pull_alerts, qr/sch/);
 $mech->x_mouse_down($vframe, 20, 20);
 like($mech->pull_alerts, qr/sch/);
 $mech->x_mouse_move($vframe, 50, 20);

@@ -128,8 +128,8 @@ function htre_register_on_load(id) {
 
 function htre_get_inner_xml(node) {
 	var xml = (new XMLSerializer()).serializeToString(node);
-	var b = new RegExp("^<" + node.nodeName + "[^>]*>");
-	var e = new RegExp("</" + node.nodeName + ">$");
+	var b = new RegExp("^<" + node.nodeName + "[^>]*>", "i");
+	var e = new RegExp("</" + node.nodeName + ">$", "i");
 	return xml.replace(b, "").replace(e, "").replace(/ _moz_\w+="\w*"/g, "");
 }
 
@@ -216,4 +216,5 @@ function htre_listen_for_state_changes(name, cb, msecs) {
 	doc.addEventListener("blur", f, true);
 	doc.addEventListener("focus", f, true);
 	doc.addEventListener("mouseup", f, true);
+	doc.addEventListener("mousedown", f, true);
 }

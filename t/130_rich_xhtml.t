@@ -56,18 +56,19 @@ is($mech->run_js('return htre_document("v").contentType'), 'application/xhtml+xm
 
 my $if_ns = HTRE_Get_Body($mech, "v", "IFrame");
 isnt($if_ns, undef) or exit 1;
-is(HTRE_Get_Value($mech, "v"), "<br/>");
-is($mech->run_js('return htre_get_value("v")'), '<br/>');
+my $br = HTRE_Get_Value($mech, "v");
+like($br, qr/^<br ?\/>$/);
+is($mech->run_js('return htre_get_value("v")'), $br);
 
-HTRE_Set_Value($mech, "v", "<br/>");
-is(HTRE_Get_Value($mech, "v"), "<br/>");
+HTRE_Set_Value($mech, "v", $br);
+is(HTRE_Get_Value($mech, "v"), $br);
 
 $mech->x_click($if_ns, 10, 10);
 $mech->x_send_keys('treb');
 $mech->x_send_keys("^(a)");
 $mech->run_js('htre_exec_command("v", "CreateLink", "a.com");');
 $mech->x_click($if_ns, 10, 10);
-is(HTRE_Get_Value($mech, "v"), '<a href="a.com">treb<br/></a>');
+is(HTRE_Get_Value($mech, "v"), '<a href="a.com">treb' . "$br</a>");
 is($mech->run_js('return htre_get_selection_state("v").link;'), "a.com");
 is_deeply($mech->console_messages, []) or diag($mech->content);
 
