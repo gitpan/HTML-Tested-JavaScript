@@ -1,23 +1,31 @@
 --- #YAML:1.0
-name:                HTML-Tested-JavaScript
-version:             0.25
-abstract:            HTML::Tested JavaScript helpers
-license:             ~
-author:              
+name:               HTML-Tested-JavaScript
+version:            0.26
+abstract:           HTML::Tested JavaScript helpers
+author:
     - Boris Sukholitko (boriss@gmail.com)
-generated_by:        ExtUtils::MakeMaker version 6.42
-distribution_type:   module
-requires:     
-    File::Slurp:                   
-    Gtk2::WebKit::Mechanize:       
-    HTML::Tested:                  0.56
-    HTTP::Daemon:                  
-    HTTP::Request::Params:         
-    JSON::XS:                      
-    Mozilla::Mechanize::GUITester: 0.18
-    Mozilla::SourceViewer:         0.05
-    Test::Simple:                  0.44
-    Text::Diff:                    
+license:            unknown
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    File::Slurp:          
+    Gtk2::WebKit::Mechanize:  
+    HTML::Tested:         0.56
+    HTTP::Daemon:         
+    HTTP::Request::Params:  
+    JSON::XS:             
+    Mozilla::Mechanize::GUITester:  0.18
+    Mozilla::SourceViewer:  0.05
+    Test::Simple:         0.44
+    Text::Diff:           
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.55_02
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
-    version: 1.3
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4

@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 20;
+use Test::More tests => 23;
 use File::Temp qw(tempdir);
 use File::Slurp;
 use File::Basename qw(dirname);
@@ -81,10 +81,17 @@ my $imsrc = "file://$td/javascript/images/color_picker.png";
 $mech->run_js("htre_insert_image('v', '$imsrc').setAttribute('class', 'foobar');");
 is_deeply($mech->console_messages, []) or diag($mech->content);
 
-my @ims = $if_ns->QueryInterface(Mozilla::DOM::HTMLElement->GetIID)
-			->GetElementsByTagName("img");
+my @ims = $mech->qi($if_ns)->GetElementsByTagName("img");
 is(@ims, 1);
 
 my $img = $ims[0]->QueryInterface(Mozilla::DOM::HTMLImageElement->GetIID);
 is($img->GetSrc, $imsrc) or diag($mech->pull_alerts);
 is($img->GetClassName, "foobar");
+
+HTRE_Set_Value($mech, "v", '<a href="a.com">bbbbb</a><span>aaaaa</span>');
+my @ps = $mech->qi($if_ns)->GetElementsByTagName("span");
+is(@ps, 1);
+$mech->x_mouse_down($ps[0], 15, 25);
+$mech->x_mouse_up($ps[0], -55, 25);
+is($mech->run_js('return _htre_win("v").getSelection()'), 'bbbbb');
+is($mech->run_js('return htre_get_selection_state("v").link;'), "a.com");

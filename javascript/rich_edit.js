@@ -17,13 +17,12 @@ var _htre_state_styles = { fontname: "fontFamily", forecolor: "color"
 		, textalign: "textAlign" };
 
 function htre_get_selection_state(id) {
-	var w = _htre_win(id);
-	var sel = w.getSelection();
+	var sel = _htre_win(id).getSelection();
 	if (!sel)
 		return;
 
 	var res = { selection: sel };
-	var an = sel.anchorNode;
+	var an = sel.focusNode;
 	if (an.tagName && an.tagName.toUpperCase() == "BODY" && an.childNodes.length == 1)
 		an = an.childNodes[0];
 
