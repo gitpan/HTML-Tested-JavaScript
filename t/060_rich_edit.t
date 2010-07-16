@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 132;
+use Test::More tests => 134;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
@@ -502,6 +502,7 @@ is_deeply($mech->console_messages, []);
 $mech->run_js(<<'ENDS');
 htre_listen_for_state_changes("v", function(n, sch) {
 	alert("sch " + sch.fontname + " " + n);
+	document.getElementById("v_fontname").selectedIndex = 1;
 }, 20);
 ENDS
 is_deeply($mech->console_messages, []) or exit 1;
@@ -511,10 +512,10 @@ $mech->x_send_keys('{RIG}');
 like($mech->pull_alerts, qr/sch Serif v/);
 
 $mech->x_click($mech->get_html_element_by_id("foci"), -3, -3);
-like($mech->pull_alerts, qr/sch Serif v/);
+is($mech->pull_alerts, '');
 
 $mech->x_click($mech->get_html_element_by_id("foci"), 3, 3);
-like($mech->pull_alerts, qr/sch Serif v/);
+is($mech->pull_alerts, '');
 
 $mech->x_send_keys("^(a)");
 $mech->run_js('htre_exec_command("v", "CreateLink", "a.com");');
@@ -560,6 +561,11 @@ return htre_escape("<DIV><IMG src=\"foo\" /><FOO bar=\"goo\" /></DIV>");
 ENDS
 	or do { diag($mech->pull_alerts); exit 1; };
 is_deeply($mech->console_messages, []) or exit 1;
+
+$mech->pull_alerts;
+$mech->x_change_select($fn_sel, 4);
+is($fn_sel->GetSelectedIndex, 4);
+is($mech->pull_alerts, '');
 
 $mech->x_click($mech->get_html_element_by_id("hide"), 3, 3);
 is_deeply($mech->console_messages, []) or exit 1;

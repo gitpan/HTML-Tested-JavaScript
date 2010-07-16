@@ -212,8 +212,6 @@ function htre_listen_for_state_changes(name, cb, msecs) {
 	var doc = htre_document(name);
 	var f = function(e) { htre_do_tick(e.currentTarget, name, cb, msecs); };
 	doc.addEventListener("keypress", f, true);
-	doc.addEventListener("blur", f, true);
-	doc.addEventListener("focus", f, true);
 	doc.addEventListener("mouseup", f, true);
 	doc.addEventListener("mousedown", f, true);
 }
