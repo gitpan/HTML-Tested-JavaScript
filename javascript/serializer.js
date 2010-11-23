@@ -126,7 +126,7 @@ function _ht_ser_set_key(keys, from, to) {
 		to[ keys[i] ] = from[ keys[i] ];
 }
 
-function ht_serializer_diff_array(keys, before, after, res, del) {
+function ht_serializer_diff_array(keys, before, after, res, del, unordered) {
 	var bhash = {};
 	var indexes = {};
 	for (var i = 0; i < before.length; i++) {
@@ -142,7 +142,7 @@ function ht_serializer_diff_array(keys, before, after, res, del) {
 		var af = {};
 		if (be) {
 			if (ht_serializer_diff_hash(be, after[i], af)
-					|| indexes[k] != i)
+					|| (!unordered && indexes[k] != i))
 				cnt++;
 			_ht_ser_set_key(keys, after[i], af);
 			delete bhash[k];

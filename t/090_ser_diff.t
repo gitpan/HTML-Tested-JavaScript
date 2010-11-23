@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 38;
+use Test::More tests => 40;
 use File::Temp qw(tempdir);
 use File::Slurp;
 use File::Basename qw(dirname);
@@ -101,13 +101,16 @@ is($mech->run_js('return c4.length'), 0);
 is($mech->run_js('return ht_serializer_encode({ c: c3 })'), 'c__1__a=1');
 is_deeply($mech->console_messages, []) or exit 1;
 
-is($mech->run_js('return ht_serializer_diff_array([ "a" ], e1, e2, e3, e4)')
-		, 2);
+is($mech->run_js('return ht_serializer_diff_array([ "a" ], e1, e2, e3, e4)'), 2);
 is($mech->run_js('return e3.length'), 2);
 is($mech->run_js('return e4.length'), 0);
 is($mech->run_js('return ht_serializer_encode({ e: e3 })')
 		, 'e__1__a=2&e__2__a=1');
 is_deeply($mech->console_messages, []) or exit 1;
+
+$mech->run_js("e3 = []; e4 = [];");
+is_deeply($mech->console_messages, []) or exit 1;
+is($mech->run_js('return ht_serializer_diff_array([ "a" ], e1, e2, e3, e4, 1)'), 0);
 
 is($mech->run_js('return ht_serializer_encode(uh)'), 'u__1__a=0&u__1__b=');
 is_deeply($mech->console_messages, []) or exit 1;
