@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 123;
+use Test::More tests => 129;
 use File::Temp qw(tempdir);
 use File::Slurp;
 use File::Basename qw(dirname);
@@ -72,8 +72,32 @@ $stash->{cp_color_sample}
 ENDS
 
 symlink(abs_path(dirname($0) . "/../javascript"), "$td/javascript");
+write_file("$td/abs.html", <<'ENDS');
+<html>
+<head>
+<script src="javascript/color_picker.js"></script>
+<body style="position: relative;">
+<div id="d1" style="position: absolute; top: 10px; left: 10px;">
+<div id="d2" style="position: absolute; top: 10px; left: 10px;">
+<div id="d3" style="position: absolute; top: 10px; left: 10px;"></div>
+</div>
+</div>
+</body>
+</head>
+</html>
+ENDS
 
 my $mech = Mozilla::Mechanize::GUITester->new(quiet => 1, visible => 0);
+ok($mech->get("file://$td/abs.html"));
+is_deeply($mech->console_messages, []) or exit 1;
+is($mech->run_js('return htcp_get_absolute_offsets(document.getElementById("d3")).toString()')
+	, "30,30") or exit 1;
+is_deeply($mech->console_messages, []) or exit 1;
+is($mech->run_js('return htcp_get_absolute_offsets('
+	. 'document.getElementById("d3"), document.getElementById("d1"))'
+	. '.toString()'), "20,20") or exit 1;
+is_deeply($mech->console_messages, []) or exit 1;
+
 ok($mech->get("file://$td/a.html"));
 is($mech->title, "Color Picker");
 is_deeply($mech->console_messages, []) or exit 1;

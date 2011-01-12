@@ -219,11 +219,13 @@ function _htcp_add_rgb_hook(name, sfx, hook) {
 	eb.addEventListener("change", hook, true);
 }
 
-function htcp_get_absolute_offsets(el) {
+function htcp_get_absolute_offsets(el, stop) {
 	var x = 0;
 	var y = 0;
 	/* offsetParent != parentNode. E.g. in list-items offsetParent == 0 */
 	while (el) {
+		if (stop && stop.isSameNode(el))
+			break;
 		x += el.offsetLeft;
 		y += el.offsetTop;
 		el = el.offsetParent;
