@@ -21,7 +21,7 @@ sub new {
 }
 
 my $_src_data = 'data:application/xhtml+xml,' . __PACKAGE__->encode_value(
-		'<html xmlns="http://www.w3.org/1999/xhtml"><body></body></html>');
+	'<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body></body></html>');
 sub render {
 	my ($self, $caller, $stash, $id) = @_;
 	my $n = $self->name;

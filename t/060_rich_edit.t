@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-use Test::More tests => 134;
+use Test::More tests => 135;
 use HTML::Tested::JavaScript qw(HTJ);
 use HTML::Tested::Test;
 use File::Slurp;
@@ -60,7 +60,7 @@ ENDS
 my $obj = T->new;
 my $stash = {};
 $obj->ht_render($stash);
-is_deeply($stash, { v => "<iframe id=\"v\" src='data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;'></iframe>", v_script => <<'ENDS'
+is_deeply($stash, { v => "<iframe id=\"v\" src='data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;'></iframe>", v_script => <<'ENDS'
 <script src="/html-tested-javascript/rich_edit.js"></script>
 <script>
 htre_register_on_load("v");
@@ -70,7 +70,7 @@ ENDS
 
 $HTML::Tested::JavaScript::Location = "javascript";
 $obj->ht_render($stash);
-is_deeply($stash, { v => "<iframe id=\"v\" src='data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;'></iframe>", v_script => <<'ENDS'
+is_deeply($stash, { v => "<iframe id=\"v\" src='data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;'></iframe>", v_script => <<'ENDS'
 <script src="javascript/rich_edit.js"></script>
 <script>
 htre_register_on_load("v");
@@ -135,6 +135,8 @@ $mech->x_send_keys('hoho hoho');
 is(HTRE_Clean($if_ns->GetInnerHTML), "hoho hoho$br");
 is($mech->run_js('return htre_get_value("v");'), "hoho hoho$br");
 is($mech->run_js('return htre_document("v");'), '[object HTMLDocument]');
+is($mech->run_js('return htre_document("v").getElementsByTagName("head")[0];')
+	, '[object HTMLHeadElement]') or exit 1;
 is_deeply($mech->console_messages, []) or exit 1;
 
 is(HTRE_Get_Value($mech, "v"), "hoho hoho$br");
@@ -156,7 +158,7 @@ is_deeply($mech->console_messages, []) or do { diag($mech->pull_alerts); exit 1;
 
 T->ht_set_widget_option("v", "no_onload", 1);
 $obj->ht_render($stash);
-is_deeply($stash, { v => "<iframe id=\"v\" src='data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;'></iframe>", v_script => <<'ENDS'
+is_deeply($stash, { v => "<iframe id=\"v\" src='data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;'></iframe>", v_script => <<'ENDS'
 <script src="javascript/rich_edit.js"></script>
 ENDS
 	, @v_fn, @v_fs });
@@ -300,13 +302,13 @@ my $body = $br =~ / / ? q{
 <div id="v_bold">Bold</div>
 <div id="v_italic">Italic</div>
 <div id="v_underline">Underline</div>
-<iframe src="data:application/xhtml+xml,%3Chtml%20xmlns=%22http://www.w3.org/1999/xhtml%22%3E%3Cbody%3E%3C/body%3E%3C/html%3E" id="v"></iframe>
+<iframe src="data:application/xhtml+xml,%3Chtml%20xmlns=%22http://www.w3.org/1999/xhtml%22%3E%3Chead%3E%3C/head%3E%3Cbody%3E%3C/body%3E%3C/html%3E" id="v"></iframe>
 } : <<ENDS;
 
 <DIV id="v_bold">Bold</DIV>
 <DIV id="v_italic">Italic</DIV>
 <DIV id="v_underline">Underline</DIV>
-<IFRAME src="data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;" id="v"/>
+<IFRAME src="data:application/xhtml+xml,&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;" id="v"/>
 ENDS
 is($ix, $body);
 
